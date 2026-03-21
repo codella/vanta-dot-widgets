@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.calendar.widget
+package dk.codella.phosphor.calendar.widget
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
@@ -29,10 +29,10 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import dk.codella.nothingwidgets.MainActivity
-import dk.codella.nothingwidgets.calendar.data.CalendarEvent
-import dk.codella.nothingwidgets.common.GlanceText
-import dk.codella.nothingwidgets.common.NothingWidgetTheme
+import dk.codella.phosphor.MainActivity
+import dk.codella.phosphor.calendar.data.CalendarEvent
+import dk.codella.phosphor.common.GlanceText
+import dk.codella.phosphor.common.PhosphorWidgetTheme
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -46,10 +46,10 @@ fun CalendarWidgetContent(events: List<CalendarEvent>, hasPermission: Boolean) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .cornerRadius(NothingWidgetTheme.CornerRadius)
-            .background(NothingWidgetTheme.Black)
+            .cornerRadius(PhosphorWidgetTheme.CornerRadius)
+            .background(PhosphorWidgetTheme.Black)
             .clickable(actionStartActivity<MainActivity>())
-            .padding(NothingWidgetTheme.Padding),
+            .padding(PhosphorWidgetTheme.Padding),
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
             DateHeader()
@@ -86,8 +86,8 @@ private fun PermissionMessage() {
     Text(
         text = "Calendar permission required",
         style = TextStyle(
-            color = ColorProvider(NothingWidgetTheme.GreyLight, NothingWidgetTheme.GreyLight),
-            fontSize = NothingWidgetTheme.BodyTextSize,
+            color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
+            fontSize = PhosphorWidgetTheme.BodyTextSize,
         ),
     )
 }
@@ -97,8 +97,8 @@ private fun EmptyMessage() {
     Text(
         text = "No upcoming events",
         style = TextStyle(
-            color = ColorProvider(NothingWidgetTheme.GreyLight, NothingWidgetTheme.GreyLight),
-            fontSize = NothingWidgetTheme.BodyTextSize,
+            color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
+            fontSize = PhosphorWidgetTheme.BodyTextSize,
         ),
     )
 }
@@ -120,8 +120,8 @@ private fun CompactEventRow(event: CalendarEvent) {
     Text(
         text = event.title,
         style = TextStyle(
-            color = ColorProvider(NothingWidgetTheme.White, NothingWidgetTheme.White),
-            fontSize = NothingWidgetTheme.BodyTextSize,
+            color = ColorProvider(PhosphorWidgetTheme.White, PhosphorWidgetTheme.White),
+            fontSize = PhosphorWidgetTheme.BodyTextSize,
             fontWeight = FontWeight.Medium,
         ),
         maxLines = 1,
@@ -152,8 +152,8 @@ private fun ExpandedEventRow(event: CalendarEvent) {
             Text(
                 text = event.title,
                 style = TextStyle(
-                    color = ColorProvider(NothingWidgetTheme.White, NothingWidgetTheme.White),
-                    fontSize = NothingWidgetTheme.BodyTextSize,
+                    color = ColorProvider(PhosphorWidgetTheme.White, PhosphorWidgetTheme.White),
+                    fontSize = PhosphorWidgetTheme.BodyTextSize,
                     fontWeight = FontWeight.Medium,
                 ),
                 maxLines = 1,
@@ -161,8 +161,8 @@ private fun ExpandedEventRow(event: CalendarEvent) {
             Text(
                 text = formatEventTime(event),
                 style = TextStyle(
-                    color = ColorProvider(NothingWidgetTheme.GreyLight, NothingWidgetTheme.GreyLight),
-                    fontSize = NothingWidgetTheme.SmallTextSize,
+                    color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
+                    fontSize = PhosphorWidgetTheme.SmallTextSize,
                 ),
                 maxLines = 1,
             )
@@ -176,7 +176,7 @@ private fun FullEventList(events: List<CalendarEvent>) {
         items(events, itemId = { it.id }) { event ->
             Column(modifier = GlanceModifier.fillMaxWidth()) {
                 FullEventRow(event)
-                Spacer(modifier = GlanceModifier.height(NothingWidgetTheme.EventSpacing))
+                Spacer(modifier = GlanceModifier.height(PhosphorWidgetTheme.EventSpacing))
             }
         }
     }
@@ -194,8 +194,8 @@ private fun FullEventRow(event: CalendarEvent) {
             Text(
                 text = event.title,
                 style = TextStyle(
-                    color = ColorProvider(NothingWidgetTheme.White, NothingWidgetTheme.White),
-                    fontSize = NothingWidgetTheme.BodyTextSize,
+                    color = ColorProvider(PhosphorWidgetTheme.White, PhosphorWidgetTheme.White),
+                    fontSize = PhosphorWidgetTheme.BodyTextSize,
                     fontWeight = FontWeight.Medium,
                 ),
                 maxLines = 1,
@@ -203,8 +203,8 @@ private fun FullEventRow(event: CalendarEvent) {
             Text(
                 text = formatEventTime(event),
                 style = TextStyle(
-                    color = ColorProvider(NothingWidgetTheme.GreyLight, NothingWidgetTheme.GreyLight),
-                    fontSize = NothingWidgetTheme.SmallTextSize,
+                    color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
+                    fontSize = PhosphorWidgetTheme.SmallTextSize,
                 ),
                 maxLines = 1,
             )
@@ -212,8 +212,8 @@ private fun FullEventRow(event: CalendarEvent) {
                 Text(
                     text = event.location,
                     style = TextStyle(
-                        color = ColorProvider(NothingWidgetTheme.GreyMedium, NothingWidgetTheme.GreyMedium),
-                        fontSize = NothingWidgetTheme.SmallTextSize,
+                        color = ColorProvider(PhosphorWidgetTheme.GreyMedium, PhosphorWidgetTheme.GreyMedium),
+                        fontSize = PhosphorWidgetTheme.SmallTextSize,
                     ),
                     maxLines = 1,
                 )
@@ -238,7 +238,7 @@ private fun DotSeparator() {
         Text(
             text = "· · ·",
             style = TextStyle(
-                color = ColorProvider(NothingWidgetTheme.GreyMedium, NothingWidgetTheme.GreyMedium),
+                color = ColorProvider(PhosphorWidgetTheme.GreyMedium, PhosphorWidgetTheme.GreyMedium),
                 fontSize = 10.sp,
             ),
         )

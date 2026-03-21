@@ -1,10 +1,10 @@
-package dk.codella.nothingwidgets.calendar.worker
+package dk.codella.phosphor.calendar.worker
 
 import android.content.Context
 import androidx.glance.appwidget.updateAll
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import dk.codella.nothingwidgets.calendar.widget.CalendarWidget
+import dk.codella.phosphor.calendar.widget.CalendarWidget
 
 class CalendarUpdateWorker(
     context: Context,

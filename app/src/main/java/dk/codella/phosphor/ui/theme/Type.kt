@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.ui.theme
+package dk.codella.phosphor.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
@@ -6,14 +6,14 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import dk.codella.nothingwidgets.R
+import dk.codella.phosphor.R
 
 val DotoFontFamily = FontFamily(
     Font(R.font.doto, FontWeight.Normal),
     Font(R.font.doto, FontWeight.Bold),
 )
 
-val NothingTypography = Typography(
+val PhosphorTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = DotoFontFamily,
         fontWeight = FontWeight.Bold,

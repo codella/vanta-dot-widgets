@@ -1,11 +1,11 @@
-package dk.codella.nothingwidgets.calendar.widget
+package dk.codella.phosphor.calendar.widget
 
 import android.content.Context
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
-import dk.codella.nothingwidgets.calendar.data.CalendarRepository
+import dk.codella.phosphor.calendar.data.CalendarRepository
 
 class CalendarWidget : GlanceAppWidget() {
 

@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets
+package dk.codella.phosphor
 
 import android.Manifest
 import android.os.Bundle
@@ -9,9 +9,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import dk.codella.nothingwidgets.calendar.data.CalendarRepository
-import dk.codella.nothingwidgets.ui.screens.WidgetCatalogScreen
-import dk.codella.nothingwidgets.ui.theme.NothingTheme
+import dk.codella.phosphor.calendar.data.CalendarRepository
+import dk.codella.phosphor.ui.screens.WidgetCatalogScreen
+import dk.codella.phosphor.ui.theme.PhosphorTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
         hasCalendarPermission = CalendarRepository(this).hasCalendarPermission()
 
         setContent {
-            NothingTheme {
+            PhosphorTheme {
                 WidgetCatalogScreen(
                     hasCalendarPermission = hasCalendarPermission,
                     onRequestPermission = {

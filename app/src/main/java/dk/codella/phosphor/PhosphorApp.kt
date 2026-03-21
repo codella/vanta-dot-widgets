@@ -1,14 +1,14 @@
-package dk.codella.nothingwidgets
+package dk.codella.phosphor
 
 import android.app.Application
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import dk.codella.nothingwidgets.calendar.worker.CalendarUpdateWorker
+import dk.codella.phosphor.calendar.worker.CalendarUpdateWorker
 import java.util.concurrent.TimeUnit
 
-class NothingWidgetsApp : Application() {
+class PhosphorApp : Application() {
 
     override fun onCreate() {
         super.onCreate()

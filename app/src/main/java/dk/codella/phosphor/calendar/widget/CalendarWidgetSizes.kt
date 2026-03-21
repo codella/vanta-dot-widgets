@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.calendar.widget
+package dk.codella.phosphor.calendar.widget
 
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp

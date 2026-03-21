@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.ui.screens
+package dk.codella.phosphor.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dk.codella.nothingwidgets.calendar.widget.CalendarWidgetReceiver
-import dk.codella.nothingwidgets.ui.theme.NothingBlack
+import dk.codella.phosphor.calendar.widget.CalendarWidgetReceiver
+import dk.codella.phosphor.ui.theme.PhosphorBlack
 
 @Composable
 fun WidgetCatalogScreen(
@@ -25,12 +25,12 @@ fun WidgetCatalogScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(NothingBlack)
+            .background(PhosphorBlack)
             .statusBarsPadding()
             .padding(horizontal = 24.dp, vertical = 16.dp),
     ) {
         Text(
-            text = "NOTHING WIDGETS",
+            text = "PHOSPHOR WIDGETS",
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.primary,
         )

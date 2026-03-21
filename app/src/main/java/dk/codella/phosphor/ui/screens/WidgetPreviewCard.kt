@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.ui.screens
+package dk.codella.phosphor.ui.screens
 
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
@@ -23,9 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import dk.codella.nothingwidgets.ui.theme.NothingGreyDark
-import dk.codella.nothingwidgets.ui.theme.NothingRed
-import dk.codella.nothingwidgets.ui.theme.NothingWhite
+import dk.codella.phosphor.ui.theme.PhosphorGreyDark
+import dk.codella.phosphor.ui.theme.PhosphorRed
+import dk.codella.phosphor.ui.theme.PhosphorWhite
 
 @Composable
 fun WidgetPreviewCard(
@@ -40,13 +40,13 @@ fun WidgetPreviewCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = NothingGreyDark),
+        colors = CardDefaults.cardColors(containerColor = PhosphorGreyDark),
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = widgetName,
                 style = MaterialTheme.typography.titleLarge,
-                color = NothingWhite,
+                color = PhosphorWhite,
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -64,7 +64,7 @@ fun WidgetPreviewCard(
                     TextButton(
                         onClick = onRequestPermission,
                         colors = ButtonDefaults.textButtonColors(
-                            contentColor = NothingRed,
+                            contentColor = PhosphorRed,
                         ),
                     ) {
                         Text("GRANT PERMISSION")
@@ -77,8 +77,8 @@ fun WidgetPreviewCard(
                     onClick = { requestPinWidget(context, receiverClass) },
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = NothingWhite,
-                        contentColor = NothingGreyDark,
+                        containerColor = PhosphorWhite,
+                        contentColor = PhosphorGreyDark,
                     ),
                 ) {
                     Text(

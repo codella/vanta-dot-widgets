@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.calendar.data
+package dk.codella.phosphor.calendar.data
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.calendar.data
+package dk.codella.phosphor.calendar.data
 
 import android.content.ContentUris
 import android.content.Context

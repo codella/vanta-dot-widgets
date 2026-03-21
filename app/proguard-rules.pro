@@ -1,11 +1,11 @@
 # Glance widget receivers must not be obfuscated
--keep class dk.codella.nothingwidgets.calendar.widget.CalendarWidgetReceiver { *; }
+-keep class dk.codella.phosphor.calendar.widget.CalendarWidgetReceiver { *; }
 
 # WorkManager workers must not be obfuscated
--keep class dk.codella.nothingwidgets.calendar.worker.CalendarUpdateWorker { *; }
+-keep class dk.codella.phosphor.calendar.worker.CalendarUpdateWorker { *; }
 
 # Application class
--keep class dk.codella.nothingwidgets.NothingWidgetsApp { *; }
+-keep class dk.codella.phosphor.PhosphorApp { *; }
 
 # Keep Glance internals
 -keep class androidx.glance.** { *; }

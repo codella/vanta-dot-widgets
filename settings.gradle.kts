@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "nothing-os-widgets"
+rootProject.name = "phosphor"
 include(":app")

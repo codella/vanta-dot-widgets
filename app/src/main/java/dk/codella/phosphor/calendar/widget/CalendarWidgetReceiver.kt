@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.calendar.widget
+package dk.codella.phosphor.calendar.widget
 
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver

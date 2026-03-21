@@ -1,10 +1,10 @@
-package dk.codella.nothingwidgets.common
+package dk.codella.phosphor.common
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-object NothingWidgetTheme {
+object PhosphorWidgetTheme {
     val Black = Color(0xFF000000)
     val White = Color(0xFFFFFFFF)
     val Red = Color(0xFFE8212A)

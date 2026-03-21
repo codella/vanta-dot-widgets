@@ -1,4 +1,4 @@
-package dk.codella.nothingwidgets.common
+package dk.codella.phosphor.common
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -6,7 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
 import androidx.core.content.res.ResourcesCompat
-import dk.codella.nothingwidgets.R
+import dk.codella.phosphor.R
 import kotlin.math.roundToInt
 
 object GlanceText {

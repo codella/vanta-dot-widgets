@@ -1,4 +1,4 @@
-# Nothing Widgets
+# Phosphor Widgets
 
 Minimalist home screen widgets for Android, inspired by the Nothing OS aesthetic. Dark, clean, dot-matrix style — built with Jetpack Glance.
 
@@ -37,12 +37,12 @@ If you're not using mise, set `JAVA_HOME` to any JDK 17 installation before runn
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-After installing, long-press on your home screen, tap "Widgets", and find **Nothing Widgets > Calendar**. The app will ask for calendar read permission on first launch.
+After installing, long-press on your home screen, tap "Widgets", and find **Phosphor > Calendar**. The app will ask for calendar read permission on first launch.
 
 ## Project Structure
 
 ```
-app/src/main/java/dk/codella/nothingwidgets/
+app/src/main/java/dk/codella/phosphor/
 ├── calendar/
 │   ├── data/          CalendarEvent model + CalendarRepository (ContentProvider queries)
 │   ├── widget/        Glance widget: CalendarWidget, CalendarWidgetContent, sizes
