@@ -71,7 +71,7 @@ fun CalendarWidgetContent(events: List<CalendarEvent>, hasPermission: Boolean) {
                     Spacer(modifier = GlanceModifier.height(8.dp))
                     CompactEventList(compactEvents)
                 }
-                isFull -> FullEventList(events.take(8))
+                isFull -> FullEventList(events.take(20))
                 else -> ExpandedEventList(events.take(4))
             }
         }
@@ -143,15 +143,23 @@ private fun CompactEventList(events: List<CalendarEvent>) {
 
 @Composable
 private fun CompactEventRow(event: CalendarEvent) {
-    Text(
-        text = event.title,
-        style = TextStyle(
-            color = ColorProvider(PhosphorWidgetTheme.White, PhosphorWidgetTheme.White),
-            fontSize = PhosphorWidgetTheme.BodyTextSize,
-            fontWeight = FontWeight.Medium,
-        ),
-        maxLines = 1,
-    )
+    Row(
+        modifier = GlanceModifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CalendarColorDot(event.calendarColor)
+        Spacer(modifier = GlanceModifier.width(8.dp))
+        Text(
+            text = event.title,
+            modifier = GlanceModifier.defaultWeight(),
+            style = TextStyle(
+                color = ColorProvider(PhosphorWidgetTheme.White, PhosphorWidgetTheme.White),
+                fontSize = PhosphorWidgetTheme.BodyTextSize,
+                fontWeight = FontWeight.Medium,
+            ),
+            maxLines = 1,
+        )
+    }
 }
 
 @Composable
@@ -208,17 +216,20 @@ private fun ExpandedEventRow(event: CalendarEvent) {
     }
 }
 
-private sealed class CalendarListItem {
-    data class Header(val dateText: String, val id: Long) : CalendarListItem()
+internal sealed class CalendarListItem {
+    data class Header(val dateText: String, val id: Long, val totalEventCount: Int? = null) : CalendarListItem()
     data class Event(val event: CalendarEvent) : CalendarListItem()
 }
 
-private fun buildListItems(events: List<CalendarEvent>): List<CalendarListItem> {
+internal fun buildListItems(events: List<CalendarEvent>): List<CalendarListItem> {
     val items = mutableListOf<CalendarListItem>()
     val grouped = groupEventsByDate(events)
     var headerId = -1L
+    var isFirst = true
     grouped.forEach { (dateLabel, groupEvents) ->
-        items.add(CalendarListItem.Header(dateLabel, headerId--))
+        val totalEventCount = if (isFirst && events.size > 3) events.size else null
+        items.add(CalendarListItem.Header(dateLabel, headerId--, totalEventCount))
+        isFirst = false
         groupEvents.forEach { event ->
             items.add(CalendarListItem.Event(event))
         }
@@ -240,14 +251,36 @@ private fun FullEventList(events: List<CalendarEvent>) {
                 is CalendarListItem.Header -> {
                     Column(modifier = GlanceModifier.fillMaxWidth()) {
                         Spacer(modifier = GlanceModifier.height(4.dp))
-                        DateSectionHeader(item.dateText)
+                        Row(
+                            modifier = GlanceModifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            DateSectionHeader(item.dateText)
+                            if (item.totalEventCount != null) {
+                                Spacer(modifier = GlanceModifier.defaultWeight())
+                                Text(
+                                    text = "${item.totalEventCount} events",
+                                    style = TextStyle(
+                                        color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
+                                        fontSize = PhosphorWidgetTheme.SmallTextSize,
+                                    ),
+                                )
+                            }
+                        }
                         Spacer(modifier = GlanceModifier.height(4.dp))
                     }
                 }
                 is CalendarListItem.Event -> {
                     Column(modifier = GlanceModifier.fillMaxWidth()) {
                         FullEventRow(item.event)
-                        Spacer(modifier = GlanceModifier.height(PhosphorWidgetTheme.EventSpacing))
+                        Spacer(modifier = GlanceModifier.height(6.dp))
+                        Box(
+                            modifier = GlanceModifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .background(PhosphorWidgetTheme.GreyDark),
+                        ) {}
+                        Spacer(modifier = GlanceModifier.height(6.dp))
                     }
                 }
             }
@@ -257,7 +290,7 @@ private fun FullEventList(events: List<CalendarEvent>) {
 
 @Composable
 private fun FullEventRow(event: CalendarEvent) {
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
+    Column(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,

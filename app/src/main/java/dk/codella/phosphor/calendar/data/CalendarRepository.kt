@@ -32,7 +32,7 @@ class CalendarRepository(private val context: Context) {
         private const val SEVEN_DAYS_MS = 7L * 24 * 60 * 60 * 1000
     }
 
-    suspend fun getUpcomingEvents(maxCount: Int = 8): List<CalendarEvent> =
+    suspend fun getUpcomingEvents(maxCount: Int = 20): List<CalendarEvent> =
         withContext(Dispatchers.IO) {
             if (!hasCalendarPermission()) return@withContext emptyList()
 

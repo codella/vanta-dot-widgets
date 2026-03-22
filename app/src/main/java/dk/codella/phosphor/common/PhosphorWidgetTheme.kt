@@ -14,7 +14,7 @@ object PhosphorWidgetTheme {
 
     val CornerRadius = 16.dp
     val Padding = 12.dp
-    val EventSpacing = 8.dp
+    val EventSpacing = 12.dp
 
     val HeaderTextSize = 24.sp
     val BodyTextSize = 14.sp
