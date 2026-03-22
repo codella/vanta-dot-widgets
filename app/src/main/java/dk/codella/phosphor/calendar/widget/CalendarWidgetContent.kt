@@ -178,6 +178,13 @@ private fun AllDaySection(events: List<CalendarEvent>) {
             .padding(10.dp),
     ) {
         Column(modifier = GlanceModifier.fillMaxWidth()) {
+            Image(
+                provider = ImageProvider(
+                    GlanceText.renderDotoText(context, "All day", 11f, PhosphorWidgetTheme.GreyLight.toArgb())
+                ),
+                contentDescription = "All day",
+            )
+            Spacer(modifier = GlanceModifier.height(6.dp))
             events.forEachIndexed { index, event ->
                 if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
                 Row(
@@ -189,13 +196,6 @@ private fun AllDaySection(events: List<CalendarEvent>) {
                     Image(
                         provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
                         contentDescription = event.title,
-                    )
-                    Spacer(modifier = GlanceModifier.width(8.dp))
-                    Image(
-                        provider = ImageProvider(
-                            GlanceText.renderDotoText(context, "All day", 11f, PhosphorWidgetTheme.GreyLight.toArgb())
-                        ),
-                        contentDescription = "All day",
                     )
                 }
             }
