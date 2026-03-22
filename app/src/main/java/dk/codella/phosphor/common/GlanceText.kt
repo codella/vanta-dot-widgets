@@ -11,6 +11,30 @@ import kotlin.math.roundToInt
 
 object GlanceText {
 
+    fun renderHollowCircle(
+        context: Context,
+        sizeDp: Float,
+        color: Int,
+        strokeDp: Float = 1.5f,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val sizePx = (sizeDp * density).roundToInt()
+        val strokePx = strokeDp * density
+
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            this.style = Paint.Style.STROKE
+            this.strokeWidth = strokePx
+        }
+
+        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val radius = (sizePx - strokePx) / 2f
+        canvas.drawCircle(sizePx / 2f, sizePx / 2f, radius, paint)
+
+        return bitmap
+    }
+
     fun renderDotoText(
         context: Context,
         text: String,

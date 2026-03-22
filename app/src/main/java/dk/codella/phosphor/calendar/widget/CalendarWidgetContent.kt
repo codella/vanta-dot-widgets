@@ -2,7 +2,6 @@ package dk.codella.phosphor.calendar.widget
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
@@ -10,11 +9,12 @@ import androidx.glance.LocalContext
 import androidx.glance.LocalSize
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
+import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
+import androidx.compose.ui.graphics.toArgb
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -26,107 +26,168 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
-import androidx.glance.text.FontWeight
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
 import dk.codella.phosphor.MainActivity
+import dk.codella.phosphor.R
 import dk.codella.phosphor.calendar.data.CalendarEvent
 import dk.codella.phosphor.common.GlanceText
 import dk.codella.phosphor.common.PhosphorWidgetTheme
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun CalendarWidgetContent(events: List<CalendarEvent>, hasPermission: Boolean) {
+fun CalendarWidgetContent(
+    events: List<CalendarEvent>,
+    hasPermission: Boolean,
+    isRefreshing: Boolean = false,
+) {
     val size = LocalSize.current
     val isCompact = size.width < CalendarWidgetSizes.EXPANDED.width
     val isFull = size.height >= CalendarWidgetSizes.FULL.height
+    val allDayEvents = events.filter { it.isAllDay }
+    val timedEvents = events.filter { !it.isAllDay }.sortedBy { it.beginTime }
 
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
             .cornerRadius(PhosphorWidgetTheme.CornerRadius)
-            .background(PhosphorWidgetTheme.Black)
+            .background(PhosphorWidgetTheme.GreyDark)
             .clickable(actionStartActivity<MainActivity>())
             .padding(PhosphorWidgetTheme.Padding),
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
+            SectionHeader("Upcoming events", isRefreshing)
+            Spacer(modifier = GlanceModifier.height(12.dp))
             when {
-                !hasPermission -> {
-                    DateHeader()
-                    Spacer(modifier = GlanceModifier.height(8.dp))
-                    PermissionMessage()
-                }
-                events.isEmpty() -> {
-                    DateHeader()
-                    Spacer(modifier = GlanceModifier.height(8.dp))
-                    EmptyMessage()
-                }
+                !hasPermission -> PermissionMessage()
+                events.isEmpty() -> EmptyMessage()
                 isCompact -> {
-                    val compactEvents = events.take(2)
-                    val grouped = groupEventsByDate(compactEvents)
-                    DateSectionHeader(grouped.keys.first())
-                    Spacer(modifier = GlanceModifier.height(8.dp))
-                    CompactEventList(compactEvents)
+                    if (allDayEvents.isNotEmpty()) {
+                        AllDaySection(allDayEvents)
+                        if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
+                    }
+                    CompactEventList(timedEvents.take(2))
                 }
-                isFull -> FullEventList(events.take(20))
-                else -> ExpandedEventList(events.take(4))
+                isFull -> {
+                    if (allDayEvents.isNotEmpty()) {
+                        AllDaySection(allDayEvents)
+                        Spacer(modifier = GlanceModifier.height(8.dp))
+                    }
+                    FullEventList(timedEvents.take(20))
+                }
+                else -> {
+                    if (allDayEvents.isNotEmpty()) {
+                        AllDaySection(allDayEvents)
+                        if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
+                    }
+                    ExpandedEventList(timedEvents.take(4))
+                }
             }
         }
     }
 }
 
-@Composable
-private fun DateHeader() {
-    val context = LocalContext.current
-    val today = SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(Date())
-    val bitmap = GlanceText.renderDotoText(
-        context = context,
-        text = today.uppercase(),
-        textSizeSp = 20f,
-    )
-    Image(
-        provider = ImageProvider(bitmap),
-        contentDescription = today,
-    )
-}
 
 @Composable
-private fun DateSectionHeader(dateText: String) {
+private fun SectionHeader(text: String, isRefreshing: Boolean = false) {
     val context = LocalContext.current
+    val label = if (isRefreshing) "$text · · ·" else text
     val bitmap = GlanceText.renderDotoText(
         context = context,
-        text = dateText.uppercase(),
+        text = label.uppercase(),
         textSizeSp = 16f,
     )
     Image(
         provider = ImageProvider(bitmap),
-        contentDescription = dateText,
+        contentDescription = label,
+        modifier = GlanceModifier.clickable(actionRunCallback<RefreshActionCallback>()),
     )
 }
 
 @Composable
 private fun PermissionMessage() {
-    Text(
-        text = "Calendar permission required",
-        style = TextStyle(
-            color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
-            fontSize = PhosphorWidgetTheme.BodyTextSize,
+    val context = LocalContext.current
+    Image(
+        provider = ImageProvider(
+            GlanceText.renderDotoText(context, "Calendar permission required", 14f, PhosphorWidgetTheme.GreyLight.toArgb())
         ),
+        contentDescription = "Calendar permission required",
     )
 }
 
+private val INSPIRATIONAL_QUOTES = listOf(
+    "Your day is wide open",
+    "Time to do something great",
+    "A blank canvas awaits",
+    "Freedom looks good on you",
+    "Make today count",
+    "The best plans are no plans",
+    "Go where the wind takes you",
+    "Breathe. You have space today",
+    "Nothing scheduled, everything possible",
+    "Today belongs to you",
+    "Less meetings, more meaning",
+    "Room to think, room to create",
+    "Enjoy the white space",
+    "An empty calendar is a gift",
+    "Adventure has no agenda",
+)
+
 @Composable
 private fun EmptyMessage() {
-    Text(
-        text = "No upcoming events",
-        style = TextStyle(
-            color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
-            fontSize = PhosphorWidgetTheme.BodyTextSize,
-        ),
-    )
+    val context = LocalContext.current
+    val quote = INSPIRATIONAL_QUOTES[System.currentTimeMillis().mod(INSPIRATIONAL_QUOTES.size)]
+    Column {
+        Image(
+            provider = ImageProvider(
+                GlanceText.renderDotoText(context, "No upcoming events", 14f, PhosphorWidgetTheme.GreyLight.toArgb())
+            ),
+            contentDescription = "No upcoming events",
+        )
+        Spacer(modifier = GlanceModifier.height(8.dp))
+        Image(
+            provider = ImageProvider(
+                GlanceText.renderDotoText(context, quote, 12f, PhosphorWidgetTheme.GreyLight.toArgb())
+            ),
+            contentDescription = quote,
+        )
+    }
+}
+
+@Composable
+private fun AllDaySection(events: List<CalendarEvent>) {
+    val context = LocalContext.current
+    Box(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .cornerRadius(8.dp)
+            .background(PhosphorWidgetTheme.GreyMedium)
+            .padding(10.dp),
+    ) {
+        Column(modifier = GlanceModifier.fillMaxWidth()) {
+            events.forEachIndexed { index, event ->
+                if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    CalendarColorDot(event.calendarColor, hollow = true)
+                    Spacer(modifier = GlanceModifier.width(8.dp))
+                    Image(
+                        provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
+                        contentDescription = event.title,
+                    )
+                    Spacer(modifier = GlanceModifier.width(8.dp))
+                    Image(
+                        provider = ImageProvider(
+                            GlanceText.renderDotoText(context, "All day", 11f, PhosphorWidgetTheme.GreyLight.toArgb())
+                        ),
+                        contentDescription = "All day",
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -143,213 +204,170 @@ private fun CompactEventList(events: List<CalendarEvent>) {
 
 @Composable
 private fun CompactEventRow(event: CalendarEvent) {
+    val context = LocalContext.current
     Row(
         modifier = GlanceModifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CalendarColorDot(event.calendarColor)
         Spacer(modifier = GlanceModifier.width(8.dp))
-        Text(
-            text = event.title,
-            modifier = GlanceModifier.defaultWeight(),
-            style = TextStyle(
-                color = ColorProvider(PhosphorWidgetTheme.White, PhosphorWidgetTheme.White),
-                fontSize = PhosphorWidgetTheme.BodyTextSize,
-                fontWeight = FontWeight.Medium,
-            ),
-            maxLines = 1,
+        Image(
+            provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
+            contentDescription = event.title,
         )
+        if (event.hasVideoConference) {
+            Spacer(modifier = GlanceModifier.width(4.dp))
+            VideocamIcon()
+        }
+        if (event.hasAttachments) {
+            Spacer(modifier = GlanceModifier.width(4.dp))
+            AttachIcon()
+        }
     }
 }
 
 @Composable
 private fun ExpandedEventList(events: List<CalendarEvent>) {
-    val grouped = groupEventsByDate(events)
     Column(modifier = GlanceModifier.fillMaxWidth()) {
-        var firstGroup = true
-        grouped.forEach { (dateLabel, groupEvents) ->
-            if (!firstGroup) {
-                Spacer(modifier = GlanceModifier.height(8.dp))
+        events.forEachIndexed { index, event ->
+            if (index > 0) {
+                DotSeparator()
             }
-            firstGroup = false
-            DateSectionHeader(dateLabel)
-            Spacer(modifier = GlanceModifier.height(4.dp))
-            groupEvents.forEachIndexed { index, event ->
-                if (index > 0) {
-                    DotSeparator()
-                }
-                ExpandedEventRow(event)
-            }
+            ExpandedEventRow(event)
         }
     }
 }
 
 @Composable
 private fun ExpandedEventRow(event: CalendarEvent) {
+    val context = LocalContext.current
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CalendarColorDot(event.calendarColor)
+            CalendarColorDot(event.calendarColor, hollow = event.isAllDay)
             Spacer(modifier = GlanceModifier.width(8.dp))
-            Text(
-                text = event.title,
-                modifier = GlanceModifier.defaultWeight(),
-                style = TextStyle(
-                    color = ColorProvider(PhosphorWidgetTheme.White, PhosphorWidgetTheme.White),
-                    fontSize = PhosphorWidgetTheme.BodyTextSize,
-                    fontWeight = FontWeight.Medium,
-                ),
-                maxLines = 1,
+            Image(
+                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
+                contentDescription = event.title,
             )
+            if (event.hasVideoConference) {
+                Spacer(modifier = GlanceModifier.width(4.dp))
+                VideocamIcon()
+            }
+            if (event.hasAttachments) {
+                Spacer(modifier = GlanceModifier.width(4.dp))
+                AttachIcon()
+            }
         }
-        Text(
-            text = formatEventTime(event),
-            modifier = GlanceModifier.padding(start = 16.dp),
-            style = TextStyle(
-                color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
-                fontSize = PhosphorWidgetTheme.SmallTextSize,
+        Image(
+            provider = ImageProvider(
+                GlanceText.renderDotoText(context, formatEventTime(event), 12f, PhosphorWidgetTheme.GreyLight.toArgb())
             ),
-            maxLines = 1,
+            contentDescription = formatEventTime(event),
+            modifier = GlanceModifier.padding(start = 16.dp),
         )
     }
 }
 
-internal sealed class CalendarListItem {
-    data class Header(val dateText: String, val id: Long, val totalEventCount: Int? = null) : CalendarListItem()
-    data class Event(val event: CalendarEvent) : CalendarListItem()
-}
-
-internal fun buildListItems(events: List<CalendarEvent>): List<CalendarListItem> {
-    val items = mutableListOf<CalendarListItem>()
-    val grouped = groupEventsByDate(events)
-    var headerId = -1L
-    var isFirst = true
-    grouped.forEach { (dateLabel, groupEvents) ->
-        val totalEventCount = if (isFirst && events.size > 3) events.size else null
-        items.add(CalendarListItem.Header(dateLabel, headerId--, totalEventCount))
-        isFirst = false
-        groupEvents.forEach { event ->
-            items.add(CalendarListItem.Event(event))
-        }
-    }
-    return items
-}
-
 @Composable
 private fun FullEventList(events: List<CalendarEvent>) {
-    val listItems = buildListItems(events)
     LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
-        items(listItems, itemId = { item ->
-            when (item) {
-                is CalendarListItem.Header -> item.id
-                is CalendarListItem.Event -> item.event.id
-            }
-        }) { item ->
-            when (item) {
-                is CalendarListItem.Header -> {
-                    Column(modifier = GlanceModifier.fillMaxWidth()) {
-                        Spacer(modifier = GlanceModifier.height(4.dp))
-                        Row(
-                            modifier = GlanceModifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            DateSectionHeader(item.dateText)
-                            if (item.totalEventCount != null) {
-                                Spacer(modifier = GlanceModifier.defaultWeight())
-                                Text(
-                                    text = "${item.totalEventCount} events",
-                                    style = TextStyle(
-                                        color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
-                                        fontSize = PhosphorWidgetTheme.SmallTextSize,
-                                    ),
-                                )
-                            }
-                        }
-                        Spacer(modifier = GlanceModifier.height(4.dp))
-                    }
-                }
-                is CalendarListItem.Event -> {
-                    Column(modifier = GlanceModifier.fillMaxWidth()) {
-                        FullEventRow(item.event)
-                        Spacer(modifier = GlanceModifier.height(6.dp))
-                        Box(
-                            modifier = GlanceModifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .background(PhosphorWidgetTheme.GreyDark),
-                        ) {}
-                        Spacer(modifier = GlanceModifier.height(6.dp))
-                    }
-                }
-            }
+        items(events, itemId = { it.id }) { event ->
+            FullEventRow(event)
         }
     }
 }
 
 @Composable
 private fun FullEventRow(event: CalendarEvent) {
-    Column(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 4.dp)) {
+    val context = LocalContext.current
+    Column(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 6.dp)) {
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CalendarColorDot(event.calendarColor)
+            CalendarColorDot(event.calendarColor, hollow = event.isAllDay)
             Spacer(modifier = GlanceModifier.width(8.dp))
-            Text(
-                text = event.title,
-                modifier = GlanceModifier.defaultWeight(),
-                style = TextStyle(
-                    color = ColorProvider(PhosphorWidgetTheme.White, PhosphorWidgetTheme.White),
-                    fontSize = PhosphorWidgetTheme.BodyTextSize,
-                    fontWeight = FontWeight.Medium,
-                ),
-                maxLines = 1,
+            Image(
+                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
+                contentDescription = event.title,
             )
+            if (event.hasVideoConference) {
+                Spacer(modifier = GlanceModifier.width(4.dp))
+                VideocamIcon()
+            }
+            if (event.hasAttachments) {
+                Spacer(modifier = GlanceModifier.width(4.dp))
+                AttachIcon()
+            }
         }
-        Text(
-            text = formatEventTime(event),
-            modifier = GlanceModifier.padding(start = 16.dp),
-            style = TextStyle(
-                color = ColorProvider(PhosphorWidgetTheme.GreyLight, PhosphorWidgetTheme.GreyLight),
-                fontSize = PhosphorWidgetTheme.SmallTextSize,
+        Image(
+            provider = ImageProvider(
+                GlanceText.renderDotoText(context, formatEventTime(event), 12f, PhosphorWidgetTheme.GreyLight.toArgb())
             ),
-            maxLines = 1,
+            contentDescription = formatEventTime(event),
+            modifier = GlanceModifier.padding(start = 16.dp),
         )
         if (!event.location.isNullOrBlank()) {
-            Text(
-                text = event.location,
-                modifier = GlanceModifier.padding(start = 16.dp),
-                style = TextStyle(
-                    color = ColorProvider(PhosphorWidgetTheme.GreyMedium, PhosphorWidgetTheme.GreyMedium),
-                    fontSize = PhosphorWidgetTheme.SmallTextSize,
+            Image(
+                provider = ImageProvider(
+                    GlanceText.renderDotoText(context, event.location, 12f, PhosphorWidgetTheme.GreyLight.toArgb())
                 ),
-                maxLines = 1,
+                contentDescription = event.location,
+                modifier = GlanceModifier.padding(start = 16.dp),
             )
         }
     }
 }
 
 @Composable
-private fun CalendarColorDot(color: Int) {
-    Box(
-        modifier = GlanceModifier
-            .size(8.dp)
-            .cornerRadius(4.dp)
-            .background(androidx.compose.ui.graphics.Color(color)),
-    ) {}
+private fun VideocamIcon() {
+    Image(
+        provider = ImageProvider(R.drawable.ic_videocam),
+        contentDescription = "Video call",
+        modifier = GlanceModifier.size(14.dp),
+    )
+}
+
+@Composable
+private fun AttachIcon() {
+    Image(
+        provider = ImageProvider(R.drawable.ic_attach),
+        contentDescription = "Attachment",
+        modifier = GlanceModifier.size(14.dp),
+    )
+}
+
+@Composable
+private fun CalendarColorDot(color: Int, hollow: Boolean = false) {
+    if (hollow) {
+        val context = LocalContext.current
+        Image(
+            provider = ImageProvider(GlanceText.renderHollowCircle(context, 8f, color)),
+            contentDescription = null,
+            modifier = GlanceModifier.size(8.dp),
+        )
+    } else {
+        Box(
+            modifier = GlanceModifier
+                .size(8.dp)
+                .cornerRadius(4.dp)
+                .background(androidx.compose.ui.graphics.Color(color)),
+        ) {}
+    }
 }
 
 @Composable
 private fun DotSeparator() {
+    val context = LocalContext.current
     Box(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Text(
-            text = "· · ·",
-            style = TextStyle(
-                color = ColorProvider(PhosphorWidgetTheme.GreyMedium, PhosphorWidgetTheme.GreyMedium),
-                fontSize = 10.sp,
+        Image(
+            provider = ImageProvider(
+                GlanceText.renderDotoText(context, "· · ·", 10f, PhosphorWidgetTheme.GreyMedium.toArgb())
             ),
+            contentDescription = null,
         )
     }
 }
@@ -362,25 +380,3 @@ private fun formatEventTime(event: CalendarEvent): String {
     return "$begin – $end"
 }
 
-private fun groupEventsByDate(events: List<CalendarEvent>): LinkedHashMap<String, List<CalendarEvent>> {
-    val today = Calendar.getInstance().apply {
-        set(Calendar.HOUR_OF_DAY, 0)
-        set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-    val tomorrow = (today.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }
-    val dateFormat = SimpleDateFormat("EEE, MMM d", Locale.getDefault())
-
-    val grouped = LinkedHashMap<String, MutableList<CalendarEvent>>()
-    for (event in events) {
-        val eventCal = Calendar.getInstance().apply { timeInMillis = event.beginTime }
-        val label = when {
-            eventCal.before(tomorrow) -> "Today"
-            eventCal.before((tomorrow.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }) -> "Tomorrow"
-            else -> dateFormat.format(Date(event.beginTime))
-        }
-        grouped.getOrPut(label) { mutableListOf() }.add(event)
-    }
-    return LinkedHashMap(grouped.mapValues { it.value.toList() })
-}
