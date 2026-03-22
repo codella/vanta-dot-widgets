@@ -3,6 +3,7 @@ package dk.codella.phosphor.calendar.widget
 import android.content.Context
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
@@ -34,17 +35,21 @@ class CalendarWidget : GlanceAppWidget() {
             else emptyList()
 
         provideContent {
-            val isRefreshing = currentState<Preferences>()[IsRefreshingKey] ?: false
+            val prefs = currentState<Preferences>()
+            val isRefreshing = prefs[IsRefreshingKey] ?: false
+            val refreshPhase = prefs[RefreshPhaseKey] ?: 0
             CalendarWidgetContent(
                 events = events,
                 hasPermission = hasPermission,
                 isRefreshing = isRefreshing,
+                refreshPhase = refreshPhase,
             )
         }
     }
 
     companion object {
         val IsRefreshingKey = booleanPreferencesKey("is_refreshing")
+        val RefreshPhaseKey = intPreferencesKey("refresh_phase")
         const val PREFS_NAME = "phosphor_debug"
         const val USE_STUB_KEY = "use_stub_calendar"
     }

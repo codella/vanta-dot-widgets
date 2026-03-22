@@ -40,6 +40,7 @@ fun CalendarWidgetContent(
     events: List<CalendarEvent>,
     hasPermission: Boolean,
     isRefreshing: Boolean = false,
+    refreshPhase: Int = 0,
 ) {
     val size = LocalSize.current
     val isCompact = size.width < CalendarWidgetSizes.EXPANDED.width
@@ -52,11 +53,10 @@ fun CalendarWidgetContent(
             .fillMaxSize()
             .cornerRadius(PhosphorWidgetTheme.CornerRadius)
             .background(PhosphorWidgetTheme.GreyDark)
-            .clickable(actionStartActivity<MainActivity>())
             .padding(PhosphorWidgetTheme.Padding),
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
-            SectionHeader("Upcoming events", isRefreshing)
+            SectionHeader("Upcoming events", isRefreshing, refreshPhase)
             Spacer(modifier = GlanceModifier.height(12.dp))
             when {
                 !hasPermission -> PermissionMessage()
@@ -89,19 +89,32 @@ fun CalendarWidgetContent(
 
 
 @Composable
-private fun SectionHeader(text: String, isRefreshing: Boolean = false) {
+private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPhase: Int = 0) {
     val context = LocalContext.current
-    val label = if (isRefreshing) "$text · · ·" else text
     val bitmap = GlanceText.renderDotoText(
         context = context,
-        text = label.uppercase(),
+        text = text.uppercase(),
         textSizeSp = 16f,
     )
-    Image(
-        provider = ImageProvider(bitmap),
-        contentDescription = label,
+    Row(
         modifier = GlanceModifier.clickable(actionRunCallback<RefreshActionCallback>()),
-    )
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            provider = ImageProvider(bitmap),
+            contentDescription = text,
+        )
+        if (isRefreshing) {
+            Spacer(modifier = GlanceModifier.width(6.dp))
+            Image(
+                provider = ImageProvider(
+                    GlanceText.renderLoadingDots(context, activeIndex = refreshPhase)
+                ),
+                contentDescription = "Loading",
+                modifier = GlanceModifier.size(width = 20.dp, height = 8.dp),
+            )
+        }
+    }
 }
 
 @Composable
@@ -206,7 +219,7 @@ private fun CompactEventList(events: List<CalendarEvent>) {
 private fun CompactEventRow(event: CalendarEvent) {
     val context = LocalContext.current
     Row(
-        modifier = GlanceModifier.fillMaxWidth(),
+        modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         CalendarColorDot(event.calendarColor)
@@ -241,7 +254,7 @@ private fun ExpandedEventList(events: List<CalendarEvent>) {
 @Composable
 private fun ExpandedEventRow(event: CalendarEvent) {
     val context = LocalContext.current
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
+    Column(modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp)) {
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -283,7 +296,7 @@ private fun FullEventList(events: List<CalendarEvent>) {
 @Composable
 private fun FullEventRow(event: CalendarEvent) {
     val context = LocalContext.current
-    Column(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 6.dp)) {
+    Column(modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp, top = 6.dp, bottom = 6.dp)) {
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -342,21 +355,17 @@ private fun AttachIcon() {
 
 @Composable
 private fun CalendarColorDot(color: Int, hollow: Boolean = false) {
-    if (hollow) {
-        val context = LocalContext.current
-        Image(
-            provider = ImageProvider(GlanceText.renderHollowCircle(context, 8f, color)),
-            contentDescription = null,
-            modifier = GlanceModifier.size(8.dp),
-        )
+    val context = LocalContext.current
+    val bitmap = if (hollow) {
+        GlanceText.renderHollowCircle(context, 8f, color)
     } else {
-        Box(
-            modifier = GlanceModifier
-                .size(8.dp)
-                .cornerRadius(4.dp)
-                .background(androidx.compose.ui.graphics.Color(color)),
-        ) {}
+        GlanceText.renderFilledCircle(context, 8f, color)
     }
+    Image(
+        provider = ImageProvider(bitmap),
+        contentDescription = null,
+        modifier = GlanceModifier.size(8.dp),
+    )
 }
 
 @Composable

@@ -11,6 +11,61 @@ import kotlin.math.roundToInt
 
 object GlanceText {
 
+    fun renderLoadingDots(
+        context: Context,
+        activeIndex: Int,
+        sizeDp: Float = 4f,
+        spacingDp: Float = 3f,
+        color: Int = android.graphics.Color.WHITE,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val dotSize = sizeDp * density
+        val activeDotSize = dotSize * 1.6f
+        val spacing = spacingDp * density
+        val totalWidth = (dotSize * 2 + activeDotSize + spacing * 2).roundToInt()
+        val totalHeight = activeDotSize.roundToInt()
+
+        val bitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val centerY = totalHeight / 2f
+
+        var x = 0f
+        for (i in 0..2) {
+            val isActive = i == activeIndex
+            val radius = if (isActive) activeDotSize / 2f else dotSize / 2f
+            val alpha = if (isActive) 255 else 120
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                this.color = color
+                this.alpha = alpha
+            }
+            x += radius
+            canvas.drawCircle(x, centerY, radius, paint)
+            x += radius + spacing
+        }
+
+        return bitmap
+    }
+
+    fun renderFilledCircle(
+        context: Context,
+        sizeDp: Float,
+        color: Int,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val sizePx = (sizeDp * density).roundToInt()
+
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            this.style = Paint.Style.FILL
+        }
+
+        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawCircle(sizePx / 2f, sizePx / 2f, sizePx / 2f, paint)
+
+        return bitmap
+    }
+
     fun renderHollowCircle(
         context: Context,
         sizeDp: Float,

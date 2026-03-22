@@ -13,15 +13,18 @@ class RefreshActionCallback : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters,
     ) {
-        updateAppWidgetState(context, glanceId) { prefs ->
-            prefs[CalendarWidget.IsRefreshingKey] = true
+        for (phase in 0..2) {
+            updateAppWidgetState(context, glanceId) { prefs ->
+                prefs[CalendarWidget.IsRefreshingKey] = true
+                prefs[CalendarWidget.RefreshPhaseKey] = phase
+            }
+            CalendarWidget().update(context, glanceId)
+            delay(300)
         }
-        CalendarWidget().update(context, glanceId)
-
-        delay(800)
 
         updateAppWidgetState(context, glanceId) { prefs ->
             prefs[CalendarWidget.IsRefreshingKey] = false
+            prefs[CalendarWidget.RefreshPhaseKey] = 0
         }
         CalendarWidget().update(context, glanceId)
     }
