@@ -106,7 +106,9 @@ fun CalendarWidgetContent(
                         AllDaySection(allDayEvents)
                         Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    FullEventList(timedEvents.take(20))
+                    Box(modifier = GlanceModifier.defaultWeight().fillMaxWidth()) {
+                        FullEventList(timedEvents.take(20))
+                    }
                 }
                 else -> {
                     if (allDayEvents.isNotEmpty()) {
