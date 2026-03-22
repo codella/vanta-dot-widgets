@@ -42,10 +42,6 @@ This is a Nothing OS-styled Android home screen widget app built with **Jetpack 
 - **`common/`** — `VantaDotWidgetTheme` holds widget-specific color/spacing constants including urgency highlight and accent colors. `GlanceText` renders text as bitmaps using the custom Doto font (since Glance doesn't support custom fonts natively), and also provides filled/hollow circle rendering for event indicators.
 - **`ui/`** — Jetpack Compose UI for `MainActivity`: theme (Material3 dark), `WidgetCatalogScreen` (with debug-only stub data toggle), and `WidgetPreviewCard` (permission request + pin widget flow).
 
-### Vendored `androidx/` directory
-
-`androidx/glance/appwidget/lazy/LazyList.kt` is a vendored copy of the AndroidX Glance `LazyColumn` implementation (Apache 2.0). This is **not a published Glance API** — it provides scrollable list support used in the 4×4 full-size widget layout. This directory is untracked in git.
-
 ### Two theming systems
 
 The app uses **two separate theming systems** for different contexts:
