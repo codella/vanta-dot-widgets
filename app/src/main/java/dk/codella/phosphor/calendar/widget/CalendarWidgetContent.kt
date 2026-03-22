@@ -218,7 +218,8 @@ private val INSPIRATIONAL_QUOTES = listOf(
 @Composable
 private fun EmptyMessage() {
     val context = LocalContext.current
-    val quote = INSPIRATIONAL_QUOTES[System.currentTimeMillis().mod(INSPIRATIONAL_QUOTES.size)]
+    val dayIndex = (System.currentTimeMillis() / 86_400_000).mod(INSPIRATIONAL_QUOTES.size)
+    val quote = INSPIRATIONAL_QUOTES[dayIndex]
     Column {
         Image(
             provider = ImageProvider(
