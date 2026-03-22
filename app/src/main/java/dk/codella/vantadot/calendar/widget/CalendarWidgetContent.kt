@@ -59,15 +59,6 @@ private fun urgencyBackground(urgency: Urgency): Color = when (urgency) {
     Urgency.IN_PROGRESS -> VantaDotWidgetTheme.HighlightInProgress
 }
 
-private fun urgencyAccent(urgency: Urgency): Color = when (urgency) {
-    Urgency.NONE -> Color.Transparent
-    Urgency.SUBTLE -> VantaDotWidgetTheme.AccentSubtle
-    Urgency.LOW -> VantaDotWidgetTheme.AccentLow
-    Urgency.MEDIUM -> VantaDotWidgetTheme.AccentMedium
-    Urgency.HIGH -> VantaDotWidgetTheme.AccentHigh
-    Urgency.IN_PROGRESS -> VantaDotWidgetTheme.AccentInProgress
-}
-
 @Composable
 fun CalendarWidgetContent(
     events: List<CalendarEvent>,
@@ -279,23 +270,13 @@ private fun EventHighlight(urgency: Urgency, content: @Composable () -> Unit) {
     if (urgency == Urgency.NONE) {
         content()
     } else {
-        Row(
+        Box(
             modifier = GlanceModifier
                 .fillMaxWidth()
                 .cornerRadius(8.dp)
                 .background(urgencyBackground(urgency)),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = GlanceModifier
-                    .width(3.dp)
-                    .height(36.dp)
-                    .cornerRadius(2.dp)
-                    .background(urgencyAccent(urgency)),
-            ) {}
-            Box(modifier = GlanceModifier.defaultWeight()) {
-                content()
-            }
+            content()
         }
     }
 }
