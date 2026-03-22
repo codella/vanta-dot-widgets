@@ -31,9 +31,43 @@ import dk.codella.phosphor.R
 import dk.codella.phosphor.calendar.data.CalendarEvent
 import dk.codella.phosphor.common.GlanceText
 import dk.codella.phosphor.common.PhosphorWidgetTheme
+import androidx.compose.ui.graphics.Color
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+private enum class Urgency { NONE, SUBTLE, LOW, MEDIUM, HIGH, IN_PROGRESS }
+
+private fun calcUrgency(event: CalendarEvent): Urgency {
+    val now = System.currentTimeMillis()
+    if (now >= event.beginTime && now < event.endTime) return Urgency.IN_PROGRESS
+    val minutesUntil = (event.beginTime - now) / 60_000
+    return when {
+        minutesUntil > 30 -> Urgency.NONE
+        minutesUntil > 10 -> Urgency.SUBTLE
+        minutesUntil > 5 -> Urgency.LOW
+        minutesUntil > 2 -> Urgency.MEDIUM
+        else -> Urgency.HIGH
+    }
+}
+
+private fun urgencyBackground(urgency: Urgency): Color = when (urgency) {
+    Urgency.NONE -> Color.Transparent
+    Urgency.SUBTLE -> PhosphorWidgetTheme.HighlightSubtle
+    Urgency.LOW -> PhosphorWidgetTheme.HighlightLow
+    Urgency.MEDIUM -> PhosphorWidgetTheme.HighlightMedium
+    Urgency.HIGH -> PhosphorWidgetTheme.HighlightHigh
+    Urgency.IN_PROGRESS -> PhosphorWidgetTheme.HighlightInProgress
+}
+
+private fun urgencyAccent(urgency: Urgency): Color = when (urgency) {
+    Urgency.NONE -> Color.Transparent
+    Urgency.SUBTLE -> PhosphorWidgetTheme.AccentSubtle
+    Urgency.LOW -> PhosphorWidgetTheme.AccentLow
+    Urgency.MEDIUM -> PhosphorWidgetTheme.AccentMedium
+    Urgency.HIGH -> PhosphorWidgetTheme.AccentHigh
+    Urgency.IN_PROGRESS -> PhosphorWidgetTheme.AccentInProgress
+}
 
 @Composable
 fun CalendarWidgetContent(
@@ -94,10 +128,10 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
     val bitmap = GlanceText.renderDotoText(
         context = context,
         text = text.uppercase(),
-        textSizeSp = 16f,
+        textSizeSp = 18f,
     )
     Row(
-        modifier = GlanceModifier.clickable(actionRunCallback<RefreshActionCallback>()),
+        modifier = GlanceModifier.fillMaxWidth().clickable(actionRunCallback<RefreshActionCallback>()),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
@@ -105,7 +139,7 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
             contentDescription = text,
         )
         if (isRefreshing) {
-            Spacer(modifier = GlanceModifier.width(6.dp))
+            Spacer(modifier = GlanceModifier.defaultWeight())
             Image(
                 provider = ImageProvider(
                     GlanceText.renderLoadingDots(context, activeIndex = refreshPhase)
@@ -204,13 +238,43 @@ private fun AllDaySection(events: List<CalendarEvent>) {
 }
 
 @Composable
+private fun EventHighlight(urgency: Urgency, content: @Composable () -> Unit) {
+    if (urgency == Urgency.NONE) {
+        content()
+    } else {
+        Row(
+            modifier = GlanceModifier
+                .fillMaxWidth()
+                .cornerRadius(8.dp)
+                .background(urgencyBackground(urgency)),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = GlanceModifier
+                    .width(3.dp)
+                    .height(36.dp)
+                    .cornerRadius(2.dp)
+                    .background(urgencyAccent(urgency)),
+            ) {}
+            Box(modifier = GlanceModifier.defaultWeight()) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
 private fun CompactEventList(events: List<CalendarEvent>) {
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         events.forEachIndexed { index, event ->
             if (index > 0) {
                 DotSeparator()
             }
-            CompactEventRow(event)
+            if (index == 0) {
+                EventHighlight(calcUrgency(event)) { CompactEventRow(event) }
+            } else {
+                CompactEventRow(event)
+            }
         }
     }
 }
@@ -246,7 +310,11 @@ private fun ExpandedEventList(events: List<CalendarEvent>) {
             if (index > 0) {
                 DotSeparator()
             }
-            ExpandedEventRow(event)
+            if (index == 0) {
+                EventHighlight(calcUrgency(event)) { ExpandedEventRow(event) }
+            } else {
+                ExpandedEventRow(event)
+            }
         }
     }
 }
@@ -286,9 +354,14 @@ private fun ExpandedEventRow(event: CalendarEvent) {
 
 @Composable
 private fun FullEventList(events: List<CalendarEvent>) {
+    val firstId = events.firstOrNull()?.id
     LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
         items(events, itemId = { it.id }) { event ->
-            FullEventRow(event)
+            if (event.id == firstId) {
+                EventHighlight(calcUrgency(event)) { FullEventRow(event) }
+            } else {
+                FullEventRow(event)
+            }
         }
     }
 }
