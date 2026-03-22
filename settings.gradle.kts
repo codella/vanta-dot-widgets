@@ -23,5 +23,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "phosphor"
+rootProject.name = "vantadot"
 include(":app")

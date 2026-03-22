@@ -5,20 +5,20 @@ plugins {
 }
 
 android {
-    namespace = "dk.codella.phosphor"
+    namespace = "dk.codella.vantadot"
     compileSdk = 36
 
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "${System.getProperty("user.home")}/.android/keystores/phosphor-release.keystore")
+            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "${System.getProperty("user.home")}/.android/keystores/vantadot-release.keystore")
             storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
-            keyAlias = System.getenv("KEY_ALIAS") ?: "phosphor"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "vantadot"
             keyPassword = System.getenv("KEY_PASSWORD") ?: ""
         }
     }
 
     defaultConfig {
-        applicationId = "dk.codella.phosphor"
+        applicationId = "dk.codella.vantadot"
         minSdk = 33
         targetSdk = 36
         versionCode = 1
