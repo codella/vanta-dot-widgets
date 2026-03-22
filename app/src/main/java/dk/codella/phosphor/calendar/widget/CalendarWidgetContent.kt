@@ -65,9 +65,11 @@ fun CalendarWidgetContent(events: List<CalendarEvent>, hasPermission: Boolean) {
                     EmptyMessage()
                 }
                 isCompact -> {
-                    DateHeader()
+                    val compactEvents = events.take(2)
+                    val grouped = groupEventsByDate(compactEvents)
+                    DateSectionHeader(grouped.keys.first())
                     Spacer(modifier = GlanceModifier.height(8.dp))
-                    CompactEventList(events.take(2))
+                    CompactEventList(compactEvents)
                 }
                 isFull -> FullEventList(events.take(8))
                 else -> ExpandedEventList(events.take(4))
