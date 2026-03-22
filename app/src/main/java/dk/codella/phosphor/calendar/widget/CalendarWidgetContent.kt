@@ -1,20 +1,21 @@
 package dk.codella.phosphor.calendar.widget
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.LocalSize
-import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.background
-import androidx.compose.ui.graphics.toArgb
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -26,12 +27,10 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
-import dk.codella.phosphor.MainActivity
 import dk.codella.phosphor.R
 import dk.codella.phosphor.calendar.data.CalendarEvent
 import dk.codella.phosphor.common.GlanceText
 import dk.codella.phosphor.common.PhosphorWidgetTheme
-import androidx.compose.ui.graphics.Color
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -100,7 +99,7 @@ fun CalendarWidgetContent(
                         AllDaySection(allDayEvents)
                         if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    CompactEventList(timedEvents.take(2))
+                    EventList(timedEvents.take(2))
                 }
                 isFull -> {
                     if (allDayEvents.isNotEmpty()) {
@@ -114,7 +113,7 @@ fun CalendarWidgetContent(
                         AllDaySection(allDayEvents)
                         if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    ExpandedEventList(timedEvents.take(4))
+                    EventList(timedEvents.take(4), showTime = true)
                 }
             }
         }
@@ -300,70 +299,25 @@ private fun EventHighlight(urgency: Urgency, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun CompactEventList(events: List<CalendarEvent>) {
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
-        events.forEachIndexed { index, event ->
-            if (index > 0) {
-                DotSeparator()
-            }
-            if (index == 0) {
-                EventHighlight(calcUrgency(event)) { CompactEventRow(event) }
-            } else {
-                CompactEventRow(event)
-            }
-        }
-    }
+private fun MaybeHighlight(event: CalendarEvent, isFirst: Boolean, content: @Composable () -> Unit) {
+    if (isFirst) EventHighlight(calcUrgency(event), content) else content()
 }
 
 @Composable
-private fun CompactEventRow(event: CalendarEvent) {
+private fun EventRow(
+    event: CalendarEvent,
+    showTime: Boolean = false,
+    showLocation: Boolean = false,
+    hollowDot: Boolean = false,
+    verticalPadding: Dp = 0.dp,
+) {
     val context = LocalContext.current
-    Row(
-        modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        CalendarColorDot(event.calendarColor)
-        Spacer(modifier = GlanceModifier.width(8.dp))
-        Image(
-            provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
-            contentDescription = event.title,
-        )
-        if (event.hasVideoConference) {
-            Spacer(modifier = GlanceModifier.width(4.dp))
-            VideocamIcon()
-        }
-        if (event.hasAttachments) {
-            Spacer(modifier = GlanceModifier.width(4.dp))
-            AttachIcon()
-        }
-    }
-}
-
-@Composable
-private fun ExpandedEventList(events: List<CalendarEvent>) {
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
-        events.forEachIndexed { index, event ->
-            if (index > 0) {
-                DotSeparator()
-            }
-            if (index == 0) {
-                EventHighlight(calcUrgency(event)) { ExpandedEventRow(event) }
-            } else {
-                ExpandedEventRow(event)
-            }
-        }
-    }
-}
-
-@Composable
-private fun ExpandedEventRow(event: CalendarEvent) {
-    val context = LocalContext.current
-    Column(modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp)) {
+    Column(modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp, top = verticalPadding, bottom = verticalPadding)) {
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CalendarColorDot(event.calendarColor, hollow = event.isAllDay)
+            CalendarColorDot(event.calendarColor, hollow = hollowDot)
             Spacer(modifier = GlanceModifier.width(8.dp))
             Image(
                 provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
@@ -378,13 +332,36 @@ private fun ExpandedEventRow(event: CalendarEvent) {
                 AttachIcon()
             }
         }
-        Image(
-            provider = ImageProvider(
-                GlanceText.renderDotoText(context, formatEventTime(event), 12f, PhosphorWidgetTheme.GreyLight.toArgb())
-            ),
-            contentDescription = formatEventTime(event),
-            modifier = GlanceModifier.padding(start = 16.dp),
-        )
+        if (showTime) {
+            Image(
+                provider = ImageProvider(
+                    GlanceText.renderDotoText(context, formatEventTime(event), 12f, PhosphorWidgetTheme.GreyLight.toArgb())
+                ),
+                contentDescription = formatEventTime(event),
+                modifier = GlanceModifier.padding(start = 16.dp),
+            )
+        }
+        if (showLocation && !event.location.isNullOrBlank()) {
+            Image(
+                provider = ImageProvider(
+                    GlanceText.renderDotoText(context, event.location, 12f, PhosphorWidgetTheme.GreyLight.toArgb())
+                ),
+                contentDescription = event.location,
+                modifier = GlanceModifier.padding(start = 16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun EventList(events: List<CalendarEvent>, showTime: Boolean = false) {
+    Column(modifier = GlanceModifier.fillMaxWidth()) {
+        events.forEachIndexed { index, event ->
+            if (index > 0) DotSeparator()
+            MaybeHighlight(event, index == 0) {
+                EventRow(event, showTime = showTime, hollowDot = showTime && event.isAllDay)
+            }
+        }
     }
 }
 
@@ -393,53 +370,9 @@ private fun FullEventList(events: List<CalendarEvent>) {
     val firstId = events.firstOrNull()?.id
     LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
         items(events, itemId = { it.id }) { event ->
-            if (event.id == firstId) {
-                EventHighlight(calcUrgency(event)) { FullEventRow(event) }
-            } else {
-                FullEventRow(event)
+            MaybeHighlight(event, event.id == firstId) {
+                EventRow(event, showTime = true, showLocation = true, hollowDot = event.isAllDay, verticalPadding = 6.dp)
             }
-        }
-    }
-}
-
-@Composable
-private fun FullEventRow(event: CalendarEvent) {
-    val context = LocalContext.current
-    Column(modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp, top = 6.dp, bottom = 6.dp)) {
-        Row(
-            modifier = GlanceModifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            CalendarColorDot(event.calendarColor, hollow = event.isAllDay)
-            Spacer(modifier = GlanceModifier.width(8.dp))
-            Image(
-                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
-                contentDescription = event.title,
-            )
-            if (event.hasVideoConference) {
-                Spacer(modifier = GlanceModifier.width(4.dp))
-                VideocamIcon()
-            }
-            if (event.hasAttachments) {
-                Spacer(modifier = GlanceModifier.width(4.dp))
-                AttachIcon()
-            }
-        }
-        Image(
-            provider = ImageProvider(
-                GlanceText.renderDotoText(context, formatEventTime(event), 12f, PhosphorWidgetTheme.GreyLight.toArgb())
-            ),
-            contentDescription = formatEventTime(event),
-            modifier = GlanceModifier.padding(start = 16.dp),
-        )
-        if (!event.location.isNullOrBlank()) {
-            Image(
-                provider = ImageProvider(
-                    GlanceText.renderDotoText(context, event.location, 12f, PhosphorWidgetTheme.GreyLight.toArgb())
-                ),
-                contentDescription = event.location,
-                modifier = GlanceModifier.padding(start = 16.dp),
-            )
         }
     }
 }
@@ -497,4 +430,3 @@ private fun formatEventTime(event: CalendarEvent): String {
     val end = timeFormat.format(Date(event.endTime))
     return "$begin – $end"
 }
-

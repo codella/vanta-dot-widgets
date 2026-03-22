@@ -9,6 +9,7 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 class CalendarWidgetReceiver : GlanceAppWidgetReceiver() {
@@ -47,9 +48,13 @@ private object MinuteTickReceiver : android.content.BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent?) {
-        if (intent?.action == Intent.ACTION_TIME_TICK) {
-            CoroutineScope(Dispatchers.IO).launch {
+        if (intent?.action != Intent.ACTION_TIME_TICK) return
+        val result = goAsync()
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            try {
                 CalendarWidget().updateAll(context)
+            } finally {
+                result.finish()
             }
         }
     }
