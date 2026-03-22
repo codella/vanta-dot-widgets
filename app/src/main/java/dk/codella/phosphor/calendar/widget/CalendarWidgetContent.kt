@@ -299,11 +299,6 @@ private fun EventHighlight(urgency: Urgency, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun MaybeHighlight(event: CalendarEvent, isFirst: Boolean, content: @Composable () -> Unit) {
-    if (isFirst) EventHighlight(calcUrgency(event), content) else content()
-}
-
-@Composable
 private fun EventRow(
     event: CalendarEvent,
     showTime: Boolean = false,
@@ -358,7 +353,7 @@ private fun EventList(events: List<CalendarEvent>, showTime: Boolean = false) {
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         events.forEachIndexed { index, event ->
             if (index > 0) DotSeparator()
-            MaybeHighlight(event, index == 0) {
+            EventHighlight(calcUrgency(event)) {
                 EventRow(event, showTime = showTime, hollowDot = showTime && event.isAllDay)
             }
         }
@@ -367,10 +362,9 @@ private fun EventList(events: List<CalendarEvent>, showTime: Boolean = false) {
 
 @Composable
 private fun FullEventList(events: List<CalendarEvent>) {
-    val firstId = events.firstOrNull()?.id
     LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
         items(events, itemId = { it.id }) { event ->
-            MaybeHighlight(event, event.id == firstId) {
+            EventHighlight(calcUrgency(event)) {
                 EventRow(event, showTime = true, showLocation = true, hollowDot = event.isAllDay, verticalPadding = 6.dp)
             }
         }
