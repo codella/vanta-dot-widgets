@@ -74,7 +74,7 @@ object StubCalendarData {
                 calendarColor = Color.parseColor("#F4B400"),
                 location = "Tandlægen, Østerbro",
             ),
-            // NONE — starts in 2 hours
+            // NONE — starts in 2 hours (tentative)
             CalendarEvent(
                 id = 6,
                 title = "Yoga class",
@@ -83,7 +83,9 @@ object StubCalendarData {
                 isAllDay = false,
                 calendarColor = Color.parseColor("#0F9D58"),
                 location = "Fitness World",
+                selfAttendeeStatus = CalendarEvent.ATTENDEE_STATUS_TENTATIVE,
             ),
+            // Invited, not yet accepted
             CalendarEvent(
                 id = 7,
                 title = "Read chapter 5",
@@ -92,6 +94,7 @@ object StubCalendarData {
                 isAllDay = false,
                 calendarColor = Color.parseColor("#F4B400"),
                 location = null,
+                selfAttendeeStatus = CalendarEvent.ATTENDEE_STATUS_INVITED,
             ),
             CalendarEvent(
                 id = 11,

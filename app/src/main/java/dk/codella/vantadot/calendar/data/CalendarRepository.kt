@@ -21,6 +21,7 @@ class CalendarRepository(private val context: Context) {
             CalendarContract.Instances.CALENDAR_COLOR,
             CalendarContract.Instances.EVENT_LOCATION,
             CalendarContract.Instances.DESCRIPTION,
+            CalendarContract.Instances.SELF_ATTENDEE_STATUS,
         )
 
         private const val COL_EVENT_ID = 0
@@ -31,6 +32,7 @@ class CalendarRepository(private val context: Context) {
         private const val COL_COLOR = 5
         private const val COL_LOCATION = 6
         private const val COL_DESCRIPTION = 7
+        private const val COL_SELF_ATTENDEE_STATUS = 8
 
         private fun endOfToday(): Long = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 23)
@@ -56,8 +58,8 @@ class CalendarRepository(private val context: Context) {
             context.contentResolver.query(
                 builder.build(),
                 PROJECTION,
-                null,
-                null,
+                "${CalendarContract.Instances.SELF_ATTENDEE_STATUS} != ?",
+                arrayOf("${CalendarEvent.ATTENDEE_STATUS_DECLINED}"),
                 "${CalendarContract.Instances.BEGIN} ASC",
             )?.use { cursor ->
                 while (cursor.moveToNext() && events.size < maxCount) {
@@ -75,6 +77,7 @@ class CalendarRepository(private val context: Context) {
                             calendarColor = cursor.getInt(COL_COLOR),
                             location = cursor.getString(COL_LOCATION),
                             description = cursor.getString(COL_DESCRIPTION),
+                            selfAttendeeStatus = cursor.getInt(COL_SELF_ATTENDEE_STATUS),
                         )
                     )
                 }

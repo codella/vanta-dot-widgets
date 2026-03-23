@@ -249,6 +249,7 @@ private fun AllDaySection(events: List<CalendarEvent>) {
             Spacer(modifier = GlanceModifier.height(6.dp))
             events.forEachIndexed { index, event ->
                 if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
+                val allDayTitleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeText.toArgb() else Color.White.toArgb()
                 Row(
                     modifier = GlanceModifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -256,9 +257,18 @@ private fun AllDaySection(events: List<CalendarEvent>) {
                     CalendarColorDot(event.calendarColor, hollow = true)
                     Spacer(modifier = GlanceModifier.width(8.dp))
                     Image(
-                        provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
+                        provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, allDayTitleColor)),
                         contentDescription = event.title,
                     )
+                    if (event.isTentative) {
+                        Spacer(modifier = GlanceModifier.width(4.dp))
+                        Image(
+                            provider = ImageProvider(
+                                GlanceText.renderDotoText(context, "?", 12f, VantaDotWidgetTheme.TentativeText.toArgb())
+                            ),
+                            contentDescription = "Tentative",
+                        )
+                    }
                 }
             }
         }
@@ -290,15 +300,16 @@ private fun EventRow(
     verticalPadding: Dp = 0.dp,
 ) {
     val context = LocalContext.current
+    val titleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeText.toArgb() else Color.White.toArgb()
     Column(modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp, top = verticalPadding, bottom = verticalPadding)) {
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CalendarColorDot(event.calendarColor, hollow = hollowDot)
+            CalendarColorDot(event.calendarColor, hollow = hollowDot || event.isTentative)
             Spacer(modifier = GlanceModifier.width(8.dp))
             Image(
-                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f)),
+                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, titleColor)),
                 contentDescription = event.title,
             )
             if (event.hasVideoConference) {
@@ -308,6 +319,15 @@ private fun EventRow(
             if (event.hasAttachments) {
                 Spacer(modifier = GlanceModifier.width(4.dp))
                 AttachIcon()
+            }
+            if (event.isTentative) {
+                Spacer(modifier = GlanceModifier.width(4.dp))
+                Image(
+                    provider = ImageProvider(
+                        GlanceText.renderDotoText(context, "?", 12f, VantaDotWidgetTheme.TentativeText.toArgb())
+                    ),
+                    contentDescription = "Tentative",
+                )
             }
         }
         if (showTime) {

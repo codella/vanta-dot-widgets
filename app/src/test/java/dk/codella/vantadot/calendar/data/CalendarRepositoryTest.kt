@@ -1,6 +1,7 @@
 package dk.codella.vantadot.calendar.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -26,6 +27,7 @@ class CalendarRepositoryTest {
         assertEquals(false, event.isAllDay)
         assertEquals(-16776961, event.calendarColor)
         assertEquals("Room A", event.location)
+        assertEquals(CalendarEvent.ATTENDEE_STATUS_ACCEPTED, event.selfAttendeeStatus)
     }
 
     @Test
@@ -77,6 +79,41 @@ class CalendarRepositoryTest {
         assertEquals("Modified", modified.title)
         assertEquals(original.id, modified.id)
         assertEquals(original.beginTime, modified.beginTime)
+    }
+
+    @Test
+    fun `isTentative returns true for INVITED status`() {
+        val event = CalendarEvent(1L, "Test", 100L, 200L, false, 0, null,
+            selfAttendeeStatus = CalendarEvent.ATTENDEE_STATUS_INVITED)
+        assertTrue(event.isTentative)
+    }
+
+    @Test
+    fun `isTentative returns true for TENTATIVE status`() {
+        val event = CalendarEvent(1L, "Test", 100L, 200L, false, 0, null,
+            selfAttendeeStatus = CalendarEvent.ATTENDEE_STATUS_TENTATIVE)
+        assertTrue(event.isTentative)
+    }
+
+    @Test
+    fun `isTentative returns false for NONE status`() {
+        val event = CalendarEvent(1L, "Test", 100L, 200L, false, 0, null,
+            selfAttendeeStatus = CalendarEvent.ATTENDEE_STATUS_NONE)
+        assertFalse(event.isTentative)
+    }
+
+    @Test
+    fun `isTentative returns false for ACCEPTED status`() {
+        val event = CalendarEvent(1L, "Test", 100L, 200L, false, 0, null,
+            selfAttendeeStatus = CalendarEvent.ATTENDEE_STATUS_ACCEPTED)
+        assertFalse(event.isTentative)
+    }
+
+    @Test
+    fun `default selfAttendeeStatus is ACCEPTED`() {
+        val event = CalendarEvent(1L, "Test", 100L, 200L, false, 0, null)
+        assertEquals(CalendarEvent.ATTENDEE_STATUS_ACCEPTED, event.selfAttendeeStatus)
+        assertFalse(event.isTentative)
     }
 
     @Test

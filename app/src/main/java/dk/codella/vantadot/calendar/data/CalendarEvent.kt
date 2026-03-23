@@ -9,7 +9,12 @@ data class CalendarEvent(
     val calendarColor: Int,
     val location: String?,
     val description: String? = null,
+    val selfAttendeeStatus: Int = ATTENDEE_STATUS_ACCEPTED,
 ) {
+    val isTentative: Boolean
+        get() = selfAttendeeStatus == ATTENDEE_STATUS_INVITED ||
+                selfAttendeeStatus == ATTENDEE_STATUS_TENTATIVE
+
     val hasVideoConference: Boolean
         get() {
             val text = listOfNotNull(location, description).joinToString(" ").lowercase()
@@ -23,6 +28,12 @@ data class CalendarEvent(
         }
 
     companion object {
+        const val ATTENDEE_STATUS_NONE = 0
+        const val ATTENDEE_STATUS_ACCEPTED = 1
+        const val ATTENDEE_STATUS_DECLINED = 2
+        const val ATTENDEE_STATUS_INVITED = 3
+        const val ATTENDEE_STATUS_TENTATIVE = 4
+
         private val VIDEO_PATTERNS = listOf(
             "zoom.us", "zoom.com",
             "meet.google.com",

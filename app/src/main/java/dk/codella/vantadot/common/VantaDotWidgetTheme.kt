@@ -15,6 +15,8 @@ object VantaDotWidgetTheme {
     val HighlightHigh = Color(0xFF3D3D3D)
     val HighlightInProgress = Color(0xFF2D1518)
 
+    val TentativeText = Color(0x99FFFFFF)
+
     val CornerRadius = 16.dp
     val Padding = 12.dp
 }
