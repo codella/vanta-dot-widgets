@@ -23,13 +23,7 @@ class CalendarWidget : GlanceAppWidget() {
 
     override val stateDefinition = PreferencesGlanceStateDefinition
 
-    override val sizeMode = SizeMode.Responsive(
-        setOf(
-            CalendarWidgetSizes.COMPACT,
-            CalendarWidgetSizes.EXPANDED,
-            CalendarWidgetSizes.FULL,
-        )
-    )
+    override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         // Bootstrap: if no cached events yet, fetch and cache them

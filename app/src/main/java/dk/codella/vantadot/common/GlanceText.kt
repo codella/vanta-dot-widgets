@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.text.TextPaint
+import android.text.TextUtils
 import androidx.core.content.res.ResourcesCompat
 import dk.codella.vantadot.R
 import kotlin.math.roundToInt
@@ -45,6 +47,26 @@ object GlanceText {
             canvas.drawCircle(x, centerY, radius, paint)
             x += radius + spacing
         }
+
+        return bitmap
+    }
+
+    fun renderFilledSquare(
+        context: Context,
+        sizeDp: Float,
+        color: Int,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val sizePx = (sizeDp * density).roundToInt()
+
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            this.style = Paint.Style.FILL
+        }
+
+        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawRect(0f, 0f, sizePx.toFloat(), sizePx.toFloat(), paint)
 
         return bitmap
     }
@@ -90,6 +112,7 @@ object GlanceText {
         text: String,
         textSizeSp: Float = 24f,
         color: Int = android.graphics.Color.WHITE,
+        maxWidthDp: Float? = null,
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val scaledDensity = context.resources.displayMetrics.scaledDensity
@@ -104,7 +127,14 @@ object GlanceText {
             this.color = color
         }
 
-        val textWidth = paint.measureText(text).roundToInt()
+        val displayText = if (maxWidthDp != null) {
+            val maxWidthPx = maxWidthDp * density
+            TextUtils.ellipsize(text, TextPaint(paint), maxWidthPx, TextUtils.TruncateAt.END).toString()
+        } else {
+            text
+        }
+
+        val textWidth = paint.measureText(displayText).roundToInt()
         val metrics = paint.fontMetrics
         val textHeight = (metrics.bottom - metrics.top).roundToInt()
 
@@ -114,7 +144,7 @@ object GlanceText {
 
         val bitmap = Bitmap.createBitmap(textWidth, textHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawText(text, 0f, -metrics.top, paint)
+        canvas.drawText(displayText, 0f, -metrics.top, paint)
 
         return bitmap
     }

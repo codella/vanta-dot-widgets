@@ -237,6 +237,9 @@ private fun EmptyMessage() {
 @Composable
 private fun AllDaySection(events: List<CalendarEvent>) {
     val context = LocalContext.current
+    val widgetWidth = LocalSize.current.width
+    // Available width: widget - outer padding(12*2) - inner box padding(10*2) - dot(8) - spacer(8) - right margin(12)
+    val titleMaxWidth = (widgetWidth - 72.dp).value
     Box(
         modifier = GlanceModifier
             .fillMaxWidth()
@@ -259,10 +262,14 @@ private fun AllDaySection(events: List<CalendarEvent>) {
                     modifier = GlanceModifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    CalendarColorDot(event.calendarColor, style = if (event.isTentative) CircleStyle.DASHED else CircleStyle.HOLLOW)
+                    Image(
+                        provider = ImageProvider(GlanceText.renderFilledSquare(context, 8f, event.calendarColor)),
+                        contentDescription = null,
+                        modifier = GlanceModifier.size(8.dp),
+                    )
                     Spacer(modifier = GlanceModifier.width(8.dp))
                     Image(
-                        provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, allDayTitleColor)),
+                        provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, allDayTitleColor, maxWidthDp = titleMaxWidth)),
                         contentDescription = event.title,
                     )
                 }
@@ -312,6 +319,15 @@ private fun EventRow(
     verticalPadding: Dp = 0.dp,
 ) {
     val context = LocalContext.current
+    val widgetWidth = LocalSize.current.width
+    // Account for icons in title width: each icon is 14dp + 4dp spacer
+    var iconsWidth = 0.dp
+    if (event.hasVideoConference) iconsWidth += 18.dp
+    if (event.hasAttachments) iconsWidth += 18.dp
+    // Available width for title: widget - outer padding(12*2) - column start(10) - dot(8) - spacer(8) - icons - right margin(12)
+    val titleMaxWidth = (widgetWidth - 62.dp - iconsWidth).value
+    // Available width for time/location: widget - outer padding(12*2) - column start(10) - inner start padding(16) - right margin(12)
+    val detailMaxWidth = (widgetWidth - 62.dp).value
     val titleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeTextArgb else android.graphics.Color.WHITE
     val dotStyle = when {
         event.isTentative -> CircleStyle.DASHED
@@ -326,7 +342,7 @@ private fun EventRow(
             CalendarColorDot(event.calendarColor, style = dotStyle)
             Spacer(modifier = GlanceModifier.width(8.dp))
             Image(
-                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, titleColor)),
+                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, titleColor, maxWidthDp = titleMaxWidth)),
                 contentDescription = event.title,
             )
             if (event.hasVideoConference) {
@@ -341,7 +357,7 @@ private fun EventRow(
         if (showTime) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, formatEventTime(event), 12f, VantaDotWidgetTheme.GreyLightArgb)
+                    GlanceText.renderDotoText(context, formatEventTime(event), 12f, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
                 ),
                 contentDescription = formatEventTime(event),
                 modifier = GlanceModifier.padding(start = 16.dp),
@@ -350,7 +366,7 @@ private fun EventRow(
         if (showLocation && !event.location.isNullOrBlank()) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, event.location, 12f, VantaDotWidgetTheme.GreyLightArgb)
+                    GlanceText.renderDotoText(context, event.location, 12f, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
                 ),
                 contentDescription = event.location,
                 modifier = GlanceModifier.padding(start = 16.dp),
