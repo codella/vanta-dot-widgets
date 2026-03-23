@@ -22,6 +22,7 @@ class CalendarRepository(private val context: Context) {
             CalendarContract.Instances.EVENT_LOCATION,
             CalendarContract.Instances.DESCRIPTION,
             CalendarContract.Instances.SELF_ATTENDEE_STATUS,
+            CalendarContract.Instances.CALENDAR_ID,
         )
 
         private const val COL_EVENT_ID = 0
@@ -33,6 +34,7 @@ class CalendarRepository(private val context: Context) {
         private const val COL_LOCATION = 6
         private const val COL_DESCRIPTION = 7
         private const val COL_SELF_ATTENDEE_STATUS = 8
+        private const val COL_CALENDAR_ID = 9
 
         private fun endOfToday(): Long = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 23)
@@ -42,7 +44,12 @@ class CalendarRepository(private val context: Context) {
         }.timeInMillis
     }
 
-    suspend fun getUpcomingEvents(maxCount: Int = 20): List<CalendarEvent> =
+    suspend fun getUpcomingEvents(
+        maxCount: Int = 20,
+        showAllDay: Boolean = true,
+        showTentative: Boolean = true,
+        includedCalendarIds: Set<Long> = emptySet(),
+    ): List<CalendarEvent> =
         withContext(Dispatchers.IO) {
             if (!hasCalendarPermission()) return@withContext emptyList()
 
@@ -53,19 +60,39 @@ class CalendarRepository(private val context: Context) {
             ContentUris.appendId(builder, now)
             ContentUris.appendId(builder, end)
 
+            val selectionParts = mutableListOf(
+                "${CalendarContract.Instances.SELF_ATTENDEE_STATUS} != ?"
+            )
+            val selectionArgs = mutableListOf("${CalendarEvent.ATTENDEE_STATUS_DECLINED}")
+
+            if (!showTentative) {
+                selectionParts += "${CalendarContract.Instances.SELF_ATTENDEE_STATUS} NOT IN (?, ?)"
+                selectionArgs += "${CalendarEvent.ATTENDEE_STATUS_INVITED}"
+                selectionArgs += "${CalendarEvent.ATTENDEE_STATUS_TENTATIVE}"
+            }
+
+            if (!showAllDay) {
+                selectionParts += "${CalendarContract.Instances.ALL_DAY} = 0"
+            }
+
+            if (includedCalendarIds.isNotEmpty()) {
+                val placeholders = includedCalendarIds.joinToString(",") { "?" }
+                selectionParts += "${CalendarContract.Instances.CALENDAR_ID} IN ($placeholders)"
+                selectionArgs += includedCalendarIds.map { it.toString() }
+            }
+
             val events = mutableListOf<CalendarEvent>()
 
             context.contentResolver.query(
                 builder.build(),
                 PROJECTION,
-                "${CalendarContract.Instances.SELF_ATTENDEE_STATUS} != ?",
-                arrayOf("${CalendarEvent.ATTENDEE_STATUS_DECLINED}"),
+                selectionParts.joinToString(" AND "),
+                selectionArgs.toTypedArray(),
                 "${CalendarContract.Instances.BEGIN} ASC",
             )?.use { cursor ->
                 while (cursor.moveToNext() && events.size < maxCount) {
                     val endTime = cursor.getLong(COL_END)
                     val isAllDay = cursor.getInt(COL_ALL_DAY) == 1
-                    // Skip events that have already ended (but keep all-day events)
                     if (!isAllDay && endTime <= now) continue
                     events.add(
                         CalendarEvent(
@@ -85,6 +112,36 @@ class CalendarRepository(private val context: Context) {
 
             events
         }
+
+    suspend fun getCalendars(): List<CalendarInfo> = withContext(Dispatchers.IO) {
+        if (!hasCalendarPermission()) return@withContext emptyList()
+
+        val calendars = mutableListOf<CalendarInfo>()
+        context.contentResolver.query(
+            CalendarContract.Calendars.CONTENT_URI,
+            arrayOf(
+                CalendarContract.Calendars._ID,
+                CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+                CalendarContract.Calendars.CALENDAR_COLOR,
+                CalendarContract.Calendars.ACCOUNT_NAME,
+            ),
+            "${CalendarContract.Calendars.VISIBLE} = 1",
+            null,
+            "${CalendarContract.Calendars.ACCOUNT_NAME} ASC, ${CalendarContract.Calendars.CALENDAR_DISPLAY_NAME} ASC",
+        )?.use { cursor ->
+            while (cursor.moveToNext()) {
+                calendars.add(
+                    CalendarInfo(
+                        id = cursor.getLong(0),
+                        displayName = cursor.getString(1) ?: "",
+                        color = cursor.getInt(2),
+                        accountName = cursor.getString(3) ?: "",
+                    )
+                )
+            }
+        }
+        calendars
+    }
 
     fun hasCalendarPermission(): Boolean =
         ContextCompat.checkSelfPermission(

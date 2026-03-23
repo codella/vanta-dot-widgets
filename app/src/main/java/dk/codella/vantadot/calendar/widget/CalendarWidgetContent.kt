@@ -31,6 +31,7 @@ import dk.codella.vantadot.R
 import dk.codella.vantadot.calendar.data.CalendarEvent
 import dk.codella.vantadot.common.GlanceText
 import dk.codella.vantadot.common.VantaDotWidgetTheme
+import dk.codella.vantadot.settings.AccentColorPreset
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -50,13 +51,13 @@ private fun calcUrgency(event: CalendarEvent): Urgency {
     }
 }
 
-private fun urgencyBackground(urgency: Urgency): Color = when (urgency) {
+private fun urgencyBackground(urgency: Urgency, accent: AccentColorPreset = AccentColorPreset.AMBER): Color = when (urgency) {
     Urgency.NONE -> Color.Transparent
     Urgency.SUBTLE -> VantaDotWidgetTheme.HighlightSubtle
     Urgency.LOW -> VantaDotWidgetTheme.HighlightLow
     Urgency.MEDIUM -> VantaDotWidgetTheme.HighlightMedium
     Urgency.HIGH -> VantaDotWidgetTheme.HighlightHigh
-    Urgency.IN_PROGRESS -> VantaDotWidgetTheme.HighlightInProgress
+    Urgency.IN_PROGRESS -> accent.inProgressBg
 }
 
 @Composable
@@ -65,12 +66,16 @@ fun CalendarWidgetContent(
     hasPermission: Boolean,
     isRefreshing: Boolean = false,
     refreshPhase: Int = 0,
+    showHeader: Boolean = true,
+    showLocation: Boolean = true,
+    accentColorIndex: Int = 0,
 ) {
     val size = LocalSize.current
     val isCompact = size.width < CalendarWidgetSizes.EXPANDED.width
     val isFull = size.height >= CalendarWidgetSizes.FULL.height
     val allDayEvents = events.filter { it.isAllDay }
     val timedEvents = events.filter { !it.isAllDay }.sortedBy { it.beginTime }
+    val accent = AccentColorPreset.fromIndex(accentColorIndex)
 
     Box(
         modifier = GlanceModifier
@@ -80,8 +85,10 @@ fun CalendarWidgetContent(
             .padding(VantaDotWidgetTheme.Padding),
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
-            SectionHeader("Upcoming events", isRefreshing, refreshPhase)
-            Spacer(modifier = GlanceModifier.height(12.dp))
+            if (showHeader) {
+                SectionHeader("Upcoming events", isRefreshing, refreshPhase)
+                Spacer(modifier = GlanceModifier.height(12.dp))
+            }
             when {
                 !hasPermission -> PermissionMessage()
                 events.isEmpty() -> EmptyMessage()
@@ -90,21 +97,21 @@ fun CalendarWidgetContent(
                         AllDaySection(allDayEvents)
                         if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    EventList(timedEvents.take(2))
+                    EventList(timedEvents.take(2), accent = accent)
                 }
                 isFull -> {
                     if (allDayEvents.isNotEmpty()) {
                         AllDaySection(allDayEvents)
                         Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = true, verticalPadding = 6.dp)
+                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = showLocation, verticalPadding = 6.dp, accent = accent)
                 }
                 else -> {
                     if (allDayEvents.isNotEmpty()) {
                         AllDaySection(allDayEvents)
                         if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    ScrollableEventList(timedEvents.take(4), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, verticalPadding = 6.dp)
+                    ScrollableEventList(timedEvents.take(4), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, verticalPadding = 6.dp, accent = accent)
                 }
             }
         }
@@ -274,7 +281,7 @@ private fun AllDaySection(events: List<CalendarEvent>) {
 }
 
 @Composable
-private fun EventHighlight(urgency: Urgency, content: @Composable () -> Unit) {
+private fun EventHighlight(urgency: Urgency, accent: AccentColorPreset = AccentColorPreset.AMBER, content: @Composable () -> Unit) {
     if (urgency == Urgency.NONE) {
         content()
     } else if (urgency == Urgency.IN_PROGRESS) {
@@ -282,14 +289,14 @@ private fun EventHighlight(urgency: Urgency, content: @Composable () -> Unit) {
             modifier = GlanceModifier
                 .fillMaxWidth()
                 .cornerRadius(8.dp)
-                .background(VantaDotWidgetTheme.HighlightInProgressBorder)
+                .background(accent.inProgressBorder)
                 .padding(1.dp),
         ) {
             Box(
                 modifier = GlanceModifier
                     .fillMaxWidth()
                     .cornerRadius(7.dp)
-                    .background(urgencyBackground(urgency)),
+                    .background(urgencyBackground(urgency, accent)),
             ) {
                 content()
             }
@@ -367,11 +374,11 @@ private fun EventRow(
 }
 
 @Composable
-private fun EventList(events: List<CalendarEvent>, showTime: Boolean = false) {
+private fun EventList(events: List<CalendarEvent>, showTime: Boolean = false, accent: AccentColorPreset = AccentColorPreset.AMBER) {
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         events.forEachIndexed { index, event ->
             if (index > 0) DotSeparator()
-            EventHighlight(calcUrgency(event)) {
+            EventHighlight(calcUrgency(event), accent = accent) {
                 EventRow(event, showTime = showTime, hollowDot = showTime && event.isAllDay)
             }
         }
@@ -385,11 +392,12 @@ private fun ScrollableEventList(
     showTime: Boolean = false,
     showLocation: Boolean = false,
     verticalPadding: Dp = 0.dp,
+    accent: AccentColorPreset = AccentColorPreset.AMBER,
 ) {
     LazyColumn(modifier = modifier) {
         items(events, itemId = { it.id }) { event ->
             Column(modifier = GlanceModifier.fillMaxWidth()) {
-                EventHighlight(calcUrgency(event)) {
+                EventHighlight(calcUrgency(event), accent = accent) {
                     EventRow(event, showTime = showTime, showLocation = showLocation, hollowDot = showTime && event.isAllDay, verticalPadding = verticalPadding)
                 }
                 Spacer(modifier = GlanceModifier.height(4.dp))

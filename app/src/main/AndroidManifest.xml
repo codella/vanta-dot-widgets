@@ -22,6 +22,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".calendar.widget.CalendarSettingsActivity"
+            android:exported="true"
+            android:theme="@style/Theme.VantaDot" />
+
         <receiver
             android:name=".calendar.widget.CalendarWidgetReceiver"
             android:exported="true">

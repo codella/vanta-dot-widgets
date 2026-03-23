@@ -12,6 +12,7 @@ import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.currentState
 import dk.codella.vantadot.calendar.data.CalendarRepository
 import dk.codella.vantadot.calendar.data.StubCalendarData
+import dk.codella.vantadot.settings.WidgetSettings
 
 class CalendarWidget : GlanceAppWidget() {
 
@@ -30,7 +31,8 @@ class CalendarWidget : GlanceAppWidget() {
             .getBoolean(USE_STUB_KEY, false)
         val repository = CalendarRepository(context)
         val hasPermission = useStub || repository.hasCalendarPermission()
-        val events = if (useStub) StubCalendarData.getEvents()
+
+        val allEvents = if (useStub) StubCalendarData.getEvents()
             else if (hasPermission) repository.getUpcomingEvents()
             else emptyList()
 
@@ -38,11 +40,21 @@ class CalendarWidget : GlanceAppWidget() {
             val prefs = currentState<Preferences>()
             val isRefreshing = prefs[IsRefreshingKey] ?: false
             val refreshPhase = prefs[RefreshPhaseKey] ?: 0
+            val settings = WidgetSettings.fromPreferences(prefs)
+
+            val events = allEvents
+                .let { list -> if (!settings.showAllDayEvents) list.filter { !it.isAllDay } else list }
+                .let { list -> if (!settings.showTentativeEvents) list.filter { !it.isTentative } else list }
+                .take(settings.maxEvents)
+
             CalendarWidgetContent(
                 events = events,
                 hasPermission = hasPermission,
                 isRefreshing = isRefreshing,
                 refreshPhase = refreshPhase,
+                showHeader = settings.showSectionHeader,
+                showLocation = settings.showEventLocation,
+                accentColorIndex = settings.accentColorIndex,
             )
         }
     }
