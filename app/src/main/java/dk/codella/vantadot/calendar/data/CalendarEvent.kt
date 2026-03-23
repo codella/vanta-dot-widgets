@@ -11,6 +11,17 @@ data class CalendarEvent(
     val description: String? = null,
     val selfAttendeeStatus: Int = ATTENDEE_STATUS_ACCEPTED,
 ) {
+    fun toJson(): org.json.JSONObject = org.json.JSONObject().apply {
+        put("id", id)
+        put("title", title)
+        put("beginTime", beginTime)
+        put("endTime", endTime)
+        put("isAllDay", isAllDay)
+        put("calendarColor", calendarColor)
+        put("location", location ?: "")
+        put("description", description ?: "")
+        put("selfAttendeeStatus", selfAttendeeStatus)
+    }
     val isTentative: Boolean
         get() = selfAttendeeStatus == ATTENDEE_STATUS_INVITED ||
                 selfAttendeeStatus == ATTENDEE_STATUS_TENTATIVE
@@ -33,6 +44,27 @@ data class CalendarEvent(
         const val ATTENDEE_STATUS_DECLINED = 2
         const val ATTENDEE_STATUS_INVITED = 3
         const val ATTENDEE_STATUS_TENTATIVE = 4
+
+        fun fromJson(json: org.json.JSONObject) = CalendarEvent(
+            id = json.getLong("id"),
+            title = json.getString("title"),
+            beginTime = json.getLong("beginTime"),
+            endTime = json.getLong("endTime"),
+            isAllDay = json.getBoolean("isAllDay"),
+            calendarColor = json.getInt("calendarColor"),
+            location = json.getString("location").ifEmpty { null },
+            description = json.getString("description").ifEmpty { null },
+            selfAttendeeStatus = json.optInt("selfAttendeeStatus", ATTENDEE_STATUS_ACCEPTED),
+        )
+
+        fun toJsonArray(events: List<CalendarEvent>): String =
+            org.json.JSONArray(events.map { it.toJson() }).toString()
+
+        fun fromJsonArray(json: String): List<CalendarEvent> {
+            if (json.isBlank()) return emptyList()
+            val array = org.json.JSONArray(json)
+            return (0 until array.length()).map { fromJson(array.getJSONObject(it)) }
+        }
 
         private val VIDEO_PATTERNS = listOf(
             "zoom.us", "zoom.com",

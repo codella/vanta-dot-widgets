@@ -22,6 +22,8 @@ class RefreshActionCallback : ActionCallback {
             delay(300)
         }
 
+        // Refresh events from calendar, then clear loading state
+        CalendarWidget.refreshEventsIntoState(context, glanceId)
         updateAppWidgetState(context, glanceId) { prefs ->
             prefs[CalendarWidget.IsRefreshingKey] = false
             prefs[CalendarWidget.RefreshPhaseKey] = 0

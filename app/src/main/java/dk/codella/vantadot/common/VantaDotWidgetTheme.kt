@@ -1,6 +1,7 @@
 package dk.codella.vantadot.common
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 
 object VantaDotWidgetTheme {
@@ -13,10 +14,13 @@ object VantaDotWidgetTheme {
     val HighlightLow = Color(0xFF2A2A2A)
     val HighlightMedium = Color(0xFF333333)
     val HighlightHigh = Color(0xFF3D3D3D)
-    val HighlightInProgress = Color(0xFF302818)
-    val HighlightInProgressBorder = Color(0xFF6B5928)
 
     val TentativeText = Color(0x99FFFFFF)
+
+    // Pre-computed ARGB values for GlanceText bitmap rendering
+    val GreyLightArgb = GreyLight.toArgb()
+    val GreyMediumArgb = GreyMedium.toArgb()
+    val TentativeTextArgb = TentativeText.toArgb()
 
     val CornerRadius = 16.dp
     val Padding = 12.dp

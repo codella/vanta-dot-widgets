@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -21,7 +20,9 @@ import dk.codella.vantadot.ui.screens.SettingsScreen
 import dk.codella.vantadot.ui.theme.VantaDotTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class CalendarSettingsActivity : ComponentActivity() {
@@ -31,12 +32,7 @@ class CalendarSettingsActivity : ComponentActivity() {
     private var initialSettings by mutableStateOf(WidgetSettings())
     private var settingsLoaded by mutableStateOf(false)
     private val updateScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    private val permissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        hasCalendarPermission = granted
-    }
+    private var saveJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,9 +66,6 @@ class CalendarSettingsActivity : ComponentActivity() {
                     SettingsScreen(
                         hasCalendarPermission = hasCalendarPermission,
                         initialSettings = initialSettings,
-                        onRequestPermission = {
-                            permissionLauncher.launch(android.Manifest.permission.READ_CALENDAR)
-                        },
                         onBack = { finish() },
                         onSettingsChanged = { settings -> saveSettings(settings) },
                     )
@@ -87,8 +80,10 @@ class CalendarSettingsActivity : ComponentActivity() {
     }
 
     private fun saveSettings(settings: WidgetSettings) {
+        saveJob?.cancel()
         val context = applicationContext
-        updateScope.launch {
+        saveJob = updateScope.launch {
+            delay(80) // debounce rapid changes (e.g. slider dragging)
             val manager = GlanceAppWidgetManager(context)
             val ids = manager.getGlanceIds(CalendarWidget::class.java)
             ids.forEach { id ->

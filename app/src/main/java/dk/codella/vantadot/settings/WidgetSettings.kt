@@ -15,9 +15,6 @@ data class WidgetSettings(
     val accentColorIndex: Int = 0,
     val includedCalendarIds: Set<Long> = emptySet(),
 ) {
-    val accentPreset: AccentColorPreset
-        get() = AccentColorPreset.fromIndex(accentColorIndex)
-
     companion object {
         const val DEFAULT_MAX_EVENTS = 8
 

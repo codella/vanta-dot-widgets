@@ -52,6 +52,8 @@ private object MinuteTickReceiver : android.content.BroadcastReceiver() {
         val result = goAsync()
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             try {
+                // Just re-render — cached events are filtered by endTime in provideContent,
+                // and urgency recalculates from System.currentTimeMillis()
                 CalendarWidget().updateAll(context)
             } finally {
                 result.finish()

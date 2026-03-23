@@ -3,11 +3,14 @@ package dk.codella.vantadot.common
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Typeface
 import androidx.core.content.res.ResourcesCompat
 import dk.codella.vantadot.R
 import kotlin.math.roundToInt
+
+enum class CircleStyle { FILLED, HOLLOW, DASHED }
 
 object GlanceText {
 
@@ -46,74 +49,37 @@ object GlanceText {
         return bitmap
     }
 
-    fun renderFilledCircle(
+    fun renderCircle(
         context: Context,
         sizeDp: Float,
         color: Int,
+        style: CircleStyle = CircleStyle.FILLED,
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val sizePx = (sizeDp * density).roundToInt()
+        val strokeDp = 1.5f
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             this.color = color
-            this.style = Paint.Style.FILL
+            when (style) {
+                CircleStyle.FILLED -> this.style = Paint.Style.FILL
+                CircleStyle.HOLLOW -> {
+                    this.style = Paint.Style.STROKE
+                    this.strokeWidth = strokeDp * density
+                }
+                CircleStyle.DASHED -> {
+                    this.style = Paint.Style.STROKE
+                    this.strokeWidth = strokeDp * density
+                    val dashPx = 2f * density
+                    val gapPx = 2f * density
+                    this.pathEffect = DashPathEffect(floatArrayOf(dashPx, gapPx), 0f)
+                }
+            }
         }
 
         val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawCircle(sizePx / 2f, sizePx / 2f, sizePx / 2f, paint)
-
-        return bitmap
-    }
-
-    fun renderHollowCircle(
-        context: Context,
-        sizeDp: Float,
-        color: Int,
-        strokeDp: Float = 1.5f,
-    ): Bitmap {
-        val density = context.resources.displayMetrics.density
-        val sizePx = (sizeDp * density).roundToInt()
-        val strokePx = strokeDp * density
-
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            this.style = Paint.Style.STROKE
-            this.strokeWidth = strokePx
-        }
-
-        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val radius = (sizePx - strokePx) / 2f
-        canvas.drawCircle(sizePx / 2f, sizePx / 2f, radius, paint)
-
-        return bitmap
-    }
-
-    fun renderDashedCircle(
-        context: Context,
-        sizeDp: Float,
-        color: Int,
-        strokeDp: Float = 1.5f,
-        dashDp: Float = 2f,
-        gapDp: Float = 2f,
-    ): Bitmap {
-        val density = context.resources.displayMetrics.density
-        val sizePx = (sizeDp * density).roundToInt()
-        val strokePx = strokeDp * density
-        val dashPx = dashDp * density
-        val gapPx = gapDp * density
-
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            this.color = color
-            this.style = Paint.Style.STROKE
-            this.strokeWidth = strokePx
-            this.pathEffect = android.graphics.DashPathEffect(floatArrayOf(dashPx, gapPx), 0f)
-        }
-
-        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val radius = (sizePx - strokePx) / 2f
+        val radius = if (style == CircleStyle.FILLED) sizePx / 2f else (sizePx - strokeDp * density) / 2f
         canvas.drawCircle(sizePx / 2f, sizePx / 2f, radius, paint)
 
         return bitmap

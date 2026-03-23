@@ -56,7 +56,6 @@ fun SettingsScreen(
     initialSettings: WidgetSettings = WidgetSettings(),
     onBack: () -> Unit,
     onSettingsChanged: (WidgetSettings) -> Unit,
-    onRequestPermission: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
 

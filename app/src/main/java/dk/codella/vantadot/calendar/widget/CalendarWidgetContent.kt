@@ -2,7 +2,6 @@ package dk.codella.vantadot.calendar.widget
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
@@ -29,6 +28,7 @@ import androidx.glance.layout.size
 import androidx.glance.layout.width
 import dk.codella.vantadot.R
 import dk.codella.vantadot.calendar.data.CalendarEvent
+import dk.codella.vantadot.common.CircleStyle
 import dk.codella.vantadot.common.GlanceText
 import dk.codella.vantadot.common.VantaDotWidgetTheme
 import dk.codella.vantadot.settings.AccentColorPreset
@@ -153,7 +153,7 @@ private fun PermissionMessage() {
     val context = LocalContext.current
     Image(
         provider = ImageProvider(
-            GlanceText.renderDotoText(context, "Calendar permission required", 14f, VantaDotWidgetTheme.GreyLight.toArgb())
+            GlanceText.renderDotoText(context, "Calendar permission required", 14f, VantaDotWidgetTheme.GreyLightArgb)
         ),
         contentDescription = "Calendar permission required",
     )
@@ -220,14 +220,14 @@ private fun EmptyMessage() {
     Column {
         Image(
             provider = ImageProvider(
-                GlanceText.renderDotoText(context, "No upcoming events", 14f, VantaDotWidgetTheme.GreyLight.toArgb())
+                GlanceText.renderDotoText(context, "No upcoming events", 14f, VantaDotWidgetTheme.GreyLightArgb)
             ),
             contentDescription = "No upcoming events",
         )
         Spacer(modifier = GlanceModifier.height(8.dp))
         Image(
             provider = ImageProvider(
-                GlanceText.renderDotoText(context, quote, 12f, VantaDotWidgetTheme.GreyLight.toArgb())
+                GlanceText.renderDotoText(context, quote, 12f, VantaDotWidgetTheme.GreyLightArgb)
             ),
             contentDescription = quote,
         )
@@ -247,19 +247,19 @@ private fun AllDaySection(events: List<CalendarEvent>) {
         Column(modifier = GlanceModifier.fillMaxWidth()) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, "All day", 11f, VantaDotWidgetTheme.GreyLight.toArgb())
+                    GlanceText.renderDotoText(context, "All day", 11f, VantaDotWidgetTheme.GreyLightArgb)
                 ),
                 contentDescription = "All day",
             )
             Spacer(modifier = GlanceModifier.height(6.dp))
             events.forEachIndexed { index, event ->
                 if (index > 0) Spacer(modifier = GlanceModifier.height(6.dp))
-                val allDayTitleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeText.toArgb() else Color.White.toArgb()
+                val allDayTitleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeTextArgb else android.graphics.Color.WHITE
                 Row(
                     modifier = GlanceModifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    CalendarColorDot(event.calendarColor, style = if (event.isTentative) DotStyle.DASHED else DotStyle.HOLLOW)
+                    CalendarColorDot(event.calendarColor, style = if (event.isTentative) CircleStyle.DASHED else CircleStyle.HOLLOW)
                     Spacer(modifier = GlanceModifier.width(8.dp))
                     Image(
                         provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, allDayTitleColor)),
@@ -309,15 +309,14 @@ private fun EventRow(
     event: CalendarEvent,
     showTime: Boolean = false,
     showLocation: Boolean = false,
-    hollowDot: Boolean = false,
     verticalPadding: Dp = 0.dp,
 ) {
     val context = LocalContext.current
-    val titleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeText.toArgb() else Color.White.toArgb()
+    val titleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeTextArgb else android.graphics.Color.WHITE
     val dotStyle = when {
-        event.isTentative -> DotStyle.DASHED
-        hollowDot -> DotStyle.HOLLOW
-        else -> DotStyle.FILLED
+        event.isTentative -> CircleStyle.DASHED
+        showTime && event.isAllDay -> CircleStyle.HOLLOW
+        else -> CircleStyle.FILLED
     }
     Column(modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp, top = verticalPadding, bottom = verticalPadding)) {
         Row(
@@ -342,7 +341,7 @@ private fun EventRow(
         if (showTime) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, formatEventTime(event), 12f, VantaDotWidgetTheme.GreyLight.toArgb())
+                    GlanceText.renderDotoText(context, formatEventTime(event), 12f, VantaDotWidgetTheme.GreyLightArgb)
                 ),
                 contentDescription = formatEventTime(event),
                 modifier = GlanceModifier.padding(start = 16.dp),
@@ -351,7 +350,7 @@ private fun EventRow(
         if (showLocation && !event.location.isNullOrBlank()) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, event.location, 12f, VantaDotWidgetTheme.GreyLight.toArgb())
+                    GlanceText.renderDotoText(context, event.location, 12f, VantaDotWidgetTheme.GreyLightArgb)
                 ),
                 contentDescription = event.location,
                 modifier = GlanceModifier.padding(start = 16.dp),
@@ -366,7 +365,7 @@ private fun EventList(events: List<CalendarEvent>, showTime: Boolean = false, ac
         events.forEachIndexed { index, event ->
             if (index > 0) DotSeparator()
             EventHighlight(calcUrgency(event), accent = accent) {
-                EventRow(event, showTime = showTime, hollowDot = showTime && event.isAllDay)
+                EventRow(event, showTime = showTime)
             }
         }
     }
@@ -385,7 +384,7 @@ private fun ScrollableEventList(
         items(events, itemId = { it.id }) { event ->
             Column(modifier = GlanceModifier.fillMaxWidth()) {
                 EventHighlight(calcUrgency(event), accent = accent) {
-                    EventRow(event, showTime = showTime, showLocation = showLocation, hollowDot = showTime && event.isAllDay, verticalPadding = verticalPadding)
+                    EventRow(event, showTime = showTime, showLocation = showLocation, verticalPadding = verticalPadding)
                 }
                 Spacer(modifier = GlanceModifier.height(4.dp))
             }
@@ -411,18 +410,11 @@ private fun AttachIcon() {
     )
 }
 
-private enum class DotStyle { FILLED, HOLLOW, DASHED }
-
 @Composable
-private fun CalendarColorDot(color: Int, style: DotStyle = DotStyle.FILLED) {
+private fun CalendarColorDot(color: Int, style: CircleStyle = CircleStyle.FILLED) {
     val context = LocalContext.current
-    val bitmap = when (style) {
-        DotStyle.FILLED -> GlanceText.renderFilledCircle(context, 8f, color)
-        DotStyle.HOLLOW -> GlanceText.renderHollowCircle(context, 8f, color)
-        DotStyle.DASHED -> GlanceText.renderDashedCircle(context, 8f, color)
-    }
     Image(
-        provider = ImageProvider(bitmap),
+        provider = ImageProvider(GlanceText.renderCircle(context, 8f, color, style)),
         contentDescription = null,
         modifier = GlanceModifier.size(8.dp),
     )
@@ -434,7 +426,7 @@ private fun DotSeparator() {
     Box(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Image(
             provider = ImageProvider(
-                GlanceText.renderDotoText(context, "· · ·", 10f, VantaDotWidgetTheme.GreyMedium.toArgb())
+                GlanceText.renderDotoText(context, "· · ·", 10f, VantaDotWidgetTheme.GreyMediumArgb)
             ),
             contentDescription = null,
         )

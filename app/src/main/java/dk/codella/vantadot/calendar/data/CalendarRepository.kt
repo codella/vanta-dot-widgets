@@ -46,9 +46,6 @@ class CalendarRepository(private val context: Context) {
 
     suspend fun getUpcomingEvents(
         maxCount: Int = 20,
-        showAllDay: Boolean = true,
-        showTentative: Boolean = true,
-        includedCalendarIds: Set<Long> = emptySet(),
     ): List<CalendarEvent> =
         withContext(Dispatchers.IO) {
             if (!hasCalendarPermission()) return@withContext emptyList()
@@ -60,34 +57,16 @@ class CalendarRepository(private val context: Context) {
             ContentUris.appendId(builder, now)
             ContentUris.appendId(builder, end)
 
-            val selectionParts = mutableListOf(
-                "${CalendarContract.Instances.SELF_ATTENDEE_STATUS} != ?"
-            )
-            val selectionArgs = mutableListOf("${CalendarEvent.ATTENDEE_STATUS_DECLINED}")
-
-            if (!showTentative) {
-                selectionParts += "${CalendarContract.Instances.SELF_ATTENDEE_STATUS} NOT IN (?, ?)"
-                selectionArgs += "${CalendarEvent.ATTENDEE_STATUS_INVITED}"
-                selectionArgs += "${CalendarEvent.ATTENDEE_STATUS_TENTATIVE}"
-            }
-
-            if (!showAllDay) {
-                selectionParts += "${CalendarContract.Instances.ALL_DAY} = 0"
-            }
-
-            if (includedCalendarIds.isNotEmpty()) {
-                val placeholders = includedCalendarIds.joinToString(",") { "?" }
-                selectionParts += "${CalendarContract.Instances.CALENDAR_ID} IN ($placeholders)"
-                selectionArgs += includedCalendarIds.map { it.toString() }
-            }
+            val selection = "${CalendarContract.Instances.SELF_ATTENDEE_STATUS} != ?"
+            val selectionArgs = arrayOf("${CalendarEvent.ATTENDEE_STATUS_DECLINED}")
 
             val events = mutableListOf<CalendarEvent>()
 
             context.contentResolver.query(
                 builder.build(),
                 PROJECTION,
-                selectionParts.joinToString(" AND "),
-                selectionArgs.toTypedArray(),
+                selection,
+                selectionArgs,
                 "${CalendarContract.Instances.BEGIN} ASC",
             )?.use { cursor ->
                 while (cursor.moveToNext() && events.size < maxCount) {
