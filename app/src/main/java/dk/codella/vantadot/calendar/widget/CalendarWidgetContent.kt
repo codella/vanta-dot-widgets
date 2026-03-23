@@ -118,7 +118,7 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
     val bitmap = GlanceText.renderDotoText(
         context = context,
         text = text.uppercase(),
-        textSizeSp = 18f,
+        textSizeSp = 14f,
     )
     Row(
         modifier = GlanceModifier.fillMaxWidth().clickable(actionRunCallback<RefreshActionCallback>()),
@@ -277,6 +277,23 @@ private fun AllDaySection(events: List<CalendarEvent>) {
 private fun EventHighlight(urgency: Urgency, content: @Composable () -> Unit) {
     if (urgency == Urgency.NONE) {
         content()
+    } else if (urgency == Urgency.IN_PROGRESS) {
+        Box(
+            modifier = GlanceModifier
+                .fillMaxWidth()
+                .cornerRadius(8.dp)
+                .background(VantaDotWidgetTheme.HighlightInProgressBorder)
+                .padding(1.dp),
+        ) {
+            Box(
+                modifier = GlanceModifier
+                    .fillMaxWidth()
+                    .cornerRadius(7.dp)
+                    .background(urgencyBackground(urgency)),
+            ) {
+                content()
+            }
+        }
     } else {
         Box(
             modifier = GlanceModifier
