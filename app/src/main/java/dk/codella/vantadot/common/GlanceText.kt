@@ -90,6 +90,35 @@ object GlanceText {
         return bitmap
     }
 
+    fun renderDashedCircle(
+        context: Context,
+        sizeDp: Float,
+        color: Int,
+        strokeDp: Float = 1.5f,
+        dashDp: Float = 2f,
+        gapDp: Float = 2f,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val sizePx = (sizeDp * density).roundToInt()
+        val strokePx = strokeDp * density
+        val dashPx = dashDp * density
+        val gapPx = gapDp * density
+
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            this.style = Paint.Style.STROKE
+            this.strokeWidth = strokePx
+            this.pathEffect = android.graphics.DashPathEffect(floatArrayOf(dashPx, gapPx), 0f)
+        }
+
+        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val radius = (sizePx - strokePx) / 2f
+        canvas.drawCircle(sizePx / 2f, sizePx / 2f, radius, paint)
+
+        return bitmap
+    }
+
     fun renderDotoText(
         context: Context,
         text: String,

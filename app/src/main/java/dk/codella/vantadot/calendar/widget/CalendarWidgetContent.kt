@@ -259,21 +259,12 @@ private fun AllDaySection(events: List<CalendarEvent>) {
                     modifier = GlanceModifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    CalendarColorDot(event.calendarColor, hollow = true)
+                    CalendarColorDot(event.calendarColor, style = if (event.isTentative) DotStyle.DASHED else DotStyle.HOLLOW)
                     Spacer(modifier = GlanceModifier.width(8.dp))
                     Image(
                         provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, allDayTitleColor)),
                         contentDescription = event.title,
                     )
-                    if (event.isTentative) {
-                        Spacer(modifier = GlanceModifier.width(4.dp))
-                        Image(
-                            provider = ImageProvider(
-                                GlanceText.renderDotoText(context, "?", 12f, VantaDotWidgetTheme.TentativeText.toArgb())
-                            ),
-                            contentDescription = "Tentative",
-                        )
-                    }
                 }
             }
         }
@@ -323,12 +314,17 @@ private fun EventRow(
 ) {
     val context = LocalContext.current
     val titleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeText.toArgb() else Color.White.toArgb()
+    val dotStyle = when {
+        event.isTentative -> DotStyle.DASHED
+        hollowDot -> DotStyle.HOLLOW
+        else -> DotStyle.FILLED
+    }
     Column(modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp, top = verticalPadding, bottom = verticalPadding)) {
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CalendarColorDot(event.calendarColor, hollow = hollowDot || event.isTentative)
+            CalendarColorDot(event.calendarColor, style = dotStyle)
             Spacer(modifier = GlanceModifier.width(8.dp))
             Image(
                 provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, titleColor)),
@@ -341,15 +337,6 @@ private fun EventRow(
             if (event.hasAttachments) {
                 Spacer(modifier = GlanceModifier.width(4.dp))
                 AttachIcon()
-            }
-            if (event.isTentative) {
-                Spacer(modifier = GlanceModifier.width(4.dp))
-                Image(
-                    provider = ImageProvider(
-                        GlanceText.renderDotoText(context, "?", 12f, VantaDotWidgetTheme.TentativeText.toArgb())
-                    ),
-                    contentDescription = "Tentative",
-                )
             }
         }
         if (showTime) {
@@ -424,13 +411,15 @@ private fun AttachIcon() {
     )
 }
 
+private enum class DotStyle { FILLED, HOLLOW, DASHED }
+
 @Composable
-private fun CalendarColorDot(color: Int, hollow: Boolean = false) {
+private fun CalendarColorDot(color: Int, style: DotStyle = DotStyle.FILLED) {
     val context = LocalContext.current
-    val bitmap = if (hollow) {
-        GlanceText.renderHollowCircle(context, 8f, color)
-    } else {
-        GlanceText.renderFilledCircle(context, 8f, color)
+    val bitmap = when (style) {
+        DotStyle.FILLED -> GlanceText.renderFilledCircle(context, 8f, color)
+        DotStyle.HOLLOW -> GlanceText.renderHollowCircle(context, 8f, color)
+        DotStyle.DASHED -> GlanceText.renderDashedCircle(context, 8f, color)
     }
     Image(
         provider = ImageProvider(bitmap),
