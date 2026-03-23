@@ -97,16 +97,14 @@ fun CalendarWidgetContent(
                         AllDaySection(allDayEvents)
                         Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    Box(modifier = GlanceModifier.defaultWeight().fillMaxWidth()) {
-                        FullEventList(timedEvents.take(20))
-                    }
+                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = true, verticalPadding = 6.dp)
                 }
                 else -> {
                     if (allDayEvents.isNotEmpty()) {
                         AllDaySection(allDayEvents)
                         if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    EventList(timedEvents.take(4), showTime = true)
+                    ScrollableEventList(timedEvents.take(4), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, verticalPadding = 6.dp)
                 }
             }
         }
@@ -364,11 +362,20 @@ private fun EventList(events: List<CalendarEvent>, showTime: Boolean = false) {
 }
 
 @Composable
-private fun FullEventList(events: List<CalendarEvent>) {
-    LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
+private fun ScrollableEventList(
+    events: List<CalendarEvent>,
+    modifier: GlanceModifier = GlanceModifier.fillMaxSize(),
+    showTime: Boolean = false,
+    showLocation: Boolean = false,
+    verticalPadding: Dp = 0.dp,
+) {
+    LazyColumn(modifier = modifier) {
         items(events, itemId = { it.id }) { event ->
-            EventHighlight(calcUrgency(event)) {
-                EventRow(event, showTime = true, showLocation = true, hollowDot = event.isAllDay, verticalPadding = 6.dp)
+            Column(modifier = GlanceModifier.fillMaxWidth()) {
+                EventHighlight(calcUrgency(event)) {
+                    EventRow(event, showTime = showTime, showLocation = showLocation, hollowDot = showTime && event.isAllDay, verticalPadding = verticalPadding)
+                }
+                Spacer(modifier = GlanceModifier.height(4.dp))
             }
         }
     }

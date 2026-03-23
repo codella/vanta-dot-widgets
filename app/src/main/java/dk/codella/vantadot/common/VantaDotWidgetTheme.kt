@@ -8,12 +8,13 @@ object VantaDotWidgetTheme {
     val GreyMedium = Color(0xFF333333)
     val GreyLight = Color(0xFF999999)
 
-    // Urgency highlight backgrounds (against GreyDark #1A1A1A)
+    // Highlight backgrounds (against GreyDark #1A1A1A)
     val HighlightSubtle = Color(0xFF222222)
     val HighlightLow = Color(0xFF2A2A2A)
     val HighlightMedium = Color(0xFF333333)
     val HighlightHigh = Color(0xFF3D3D3D)
-    val HighlightInProgress = Color(0xFF2D1518)
+    val HighlightInProgress = Color(0xFF302818)
+    val HighlightInProgressBorder = Color(0xFF6B5928)
 
     val TentativeText = Color(0x99FFFFFF)
 
