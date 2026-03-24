@@ -41,9 +41,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import android.content.Context
+import dk.codella.vantadot.BuildConfig
 import dk.codella.vantadot.calendar.data.CalendarInfo
 import dk.codella.vantadot.calendar.data.CalendarRepository
+import dk.codella.vantadot.calendar.widget.CalendarWidget
 import dk.codella.vantadot.settings.AccentColorPreset
+import dk.codella.vantadot.settings.FontSizePreset
 import dk.codella.vantadot.settings.WidgetSettings
 import dk.codella.vantadot.ui.theme.VantaDotBlack
 import dk.codella.vantadot.ui.theme.VantaDotGreyDark
@@ -67,6 +71,10 @@ fun SettingsScreen(
     var accentIndex by remember { mutableIntStateOf(initialSettings.accentColorIndex) }
     var includedIds by remember { mutableStateOf(initialSettings.includedCalendarIds) }
     var calendars by remember { mutableStateOf<List<CalendarInfo>>(emptyList()) }
+    var use24Hour by remember { mutableStateOf(initialSettings.use24HourFormat) }
+    var compactTime by remember { mutableStateOf(initialSettings.showCompactTime) }
+    var fontSizePreset by remember { mutableIntStateOf(initialSettings.fontSizePreset) }
+    var refreshInterval by remember { mutableIntStateOf(initialSettings.refreshIntervalMinutes) }
 
     LaunchedEffect(hasCalendarPermission) {
         if (hasCalendarPermission) {
@@ -82,6 +90,10 @@ fun SettingsScreen(
         maxEvents = maxEvents.toInt(),
         accentColorIndex = accentIndex,
         includedCalendarIds = includedIds,
+        use24HourFormat = use24Hour,
+        showCompactTime = compactTime,
+        fontSizePreset = fontSizePreset,
+        refreshIntervalMinutes = refreshInterval,
     )
 
     fun save() {
@@ -146,6 +158,18 @@ fun SettingsScreen(
                 }
             }
 
+            item {
+                SettingToggle("24-HOUR TIME FORMAT", use24Hour) {
+                    use24Hour = it; save()
+                }
+            }
+
+            item {
+                SettingToggle("COMPACT TIME (START ONLY)", compactTime) {
+                    compactTime = it; save()
+                }
+            }
+
             item { Spacer(modifier = Modifier.height(12.dp)) }
 
             item { SectionLabel("MAX EVENTS") }
@@ -163,6 +187,33 @@ fun SettingsScreen(
             item {
                 AccentColorRow(accentIndex) {
                     accentIndex = it; save()
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(12.dp)) }
+
+            item { SectionLabel("FONT SIZE") }
+
+            item {
+                SegmentedSelector(
+                    options = FontSizePreset.entries.map { it.displayName },
+                    selectedIndex = fontSizePreset,
+                ) {
+                    fontSizePreset = it; save()
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(12.dp)) }
+
+            item { SectionLabel("REFRESH INTERVAL") }
+
+            item {
+                val intervals = listOf(15, 30, 60)
+                SegmentedSelector(
+                    options = intervals.map { "${it} MIN" },
+                    selectedIndex = intervals.indexOf(refreshInterval).coerceAtLeast(0),
+                ) {
+                    refreshInterval = intervals[it]; save()
                 }
             }
 
@@ -215,6 +266,22 @@ fun SettingsScreen(
                             val newIds = currentIds - calendar.id
                             if (newIds.size == calendars.size) emptySet() else newIds
                         }
+                        save()
+                    }
+                }
+            }
+
+            if (BuildConfig.DEBUG) {
+                item { Spacer(modifier = Modifier.height(12.dp)) }
+
+                item { SectionLabel("DEBUG") }
+
+                item {
+                    val stubPrefs = context.getSharedPreferences(CalendarWidget.PREFS_NAME, Context.MODE_PRIVATE)
+                    var useStub by remember { mutableStateOf(stubPrefs.getBoolean(CalendarWidget.USE_STUB_KEY, false)) }
+                    SettingToggle("USE STUB DATA", useStub) {
+                        useStub = it
+                        stubPrefs.edit().putBoolean(CalendarWidget.USE_STUB_KEY, it).commit()
                         save()
                     }
                 }
@@ -322,6 +389,36 @@ private fun AccentColorRow(selectedIndex: Int, onSelect: (Int) -> Unit) {
                     )
                     .clickable { onSelect(index) },
             )
+        }
+    }
+}
+
+@Composable
+private fun SegmentedSelector(options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(VantaDotGreyDark, RoundedCornerShape(12.dp))
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        options.forEachIndexed { index, label ->
+            val isSelected = index == selectedIndex
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (isSelected) VantaDotWhite else VantaDotBlack.copy(alpha = 0.3f))
+                    .clickable { onSelect(index) }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isSelected) VantaDotBlack else VantaDotGreyLight,
+                )
+            }
         }
     }
 }

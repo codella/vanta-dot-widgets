@@ -3,6 +3,7 @@
 
 # WorkManager workers must not be obfuscated
 -keep class dk.codella.vantadot.calendar.worker.CalendarUpdateWorker { *; }
+-keep class dk.codella.vantadot.calendar.worker.CalendarContentChangeWorker { *; }
 
 # Application class
 -keep class dk.codella.vantadot.VantaDotApp { *; }

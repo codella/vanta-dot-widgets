@@ -14,9 +14,14 @@ data class WidgetSettings(
     val maxEvents: Int = DEFAULT_MAX_EVENTS,
     val accentColorIndex: Int = 0,
     val includedCalendarIds: Set<Long> = emptySet(),
+    val use24HourFormat: Boolean = true,
+    val showCompactTime: Boolean = false,
+    val fontSizePreset: Int = 1,
+    val refreshIntervalMinutes: Int = DEFAULT_REFRESH_INTERVAL,
 ) {
     companion object {
         const val DEFAULT_MAX_EVENTS = 8
+        const val DEFAULT_REFRESH_INTERVAL = 15
 
         val ShowSectionHeaderKey = booleanPreferencesKey("show_section_header")
         val ShowAllDayEventsKey = booleanPreferencesKey("show_all_day_events")
@@ -25,6 +30,10 @@ data class WidgetSettings(
         val MaxEventsKey = intPreferencesKey("max_events")
         val AccentColorIndexKey = intPreferencesKey("accent_color_index")
         val IncludedCalendarIdsKey = stringSetPreferencesKey("included_calendar_ids")
+        val Use24HourFormatKey = booleanPreferencesKey("use_24_hour_format")
+        val ShowCompactTimeKey = booleanPreferencesKey("show_compact_time")
+        val FontSizePresetKey = intPreferencesKey("font_size_preset")
+        val RefreshIntervalMinutesKey = intPreferencesKey("refresh_interval_minutes")
 
         fun fromPreferences(prefs: Preferences) = WidgetSettings(
             showSectionHeader = prefs[ShowSectionHeaderKey] ?: true,
@@ -37,6 +46,10 @@ data class WidgetSettings(
                 ?.mapNotNull { it.toLongOrNull() }
                 ?.toSet()
                 ?: emptySet(),
+            use24HourFormat = prefs[Use24HourFormatKey] ?: true,
+            showCompactTime = prefs[ShowCompactTimeKey] ?: false,
+            fontSizePreset = prefs[FontSizePresetKey] ?: 1,
+            refreshIntervalMinutes = prefs[RefreshIntervalMinutesKey] ?: DEFAULT_REFRESH_INTERVAL,
         )
 
         fun writeTo(prefs: MutablePreferences, settings: WidgetSettings) {
@@ -47,6 +60,10 @@ data class WidgetSettings(
             prefs[MaxEventsKey] = settings.maxEvents
             prefs[AccentColorIndexKey] = settings.accentColorIndex
             prefs[IncludedCalendarIdsKey] = settings.includedCalendarIds.map { it.toString() }.toSet()
+            prefs[Use24HourFormatKey] = settings.use24HourFormat
+            prefs[ShowCompactTimeKey] = settings.showCompactTime
+            prefs[FontSizePresetKey] = settings.fontSizePreset
+            prefs[RefreshIntervalMinutesKey] = settings.refreshIntervalMinutes
         }
     }
 }

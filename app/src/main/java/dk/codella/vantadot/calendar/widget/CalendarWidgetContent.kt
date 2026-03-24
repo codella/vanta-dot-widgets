@@ -32,6 +32,7 @@ import dk.codella.vantadot.common.CircleStyle
 import dk.codella.vantadot.common.GlanceText
 import dk.codella.vantadot.common.VantaDotWidgetTheme
 import dk.codella.vantadot.settings.AccentColorPreset
+import dk.codella.vantadot.settings.FontSizePreset
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -69,6 +70,9 @@ fun CalendarWidgetContent(
     showHeader: Boolean = true,
     showLocation: Boolean = true,
     accentColorIndex: Int = 0,
+    use24HourFormat: Boolean = true,
+    showCompactTime: Boolean = false,
+    fontSizePreset: Int = 1,
 ) {
     val size = LocalSize.current
     val isCompact = size.width < CalendarWidgetSizes.EXPANDED.width
@@ -76,6 +80,7 @@ fun CalendarWidgetContent(
     val allDayEvents = events.filter { it.isAllDay }
     val timedEvents = events.filter { !it.isAllDay }.sortedBy { it.beginTime }
     val accent = AccentColorPreset.fromIndex(accentColorIndex)
+    val fontScale = FontSizePreset.fromIndex(fontSizePreset).scaleFactor
 
     Box(
         modifier = GlanceModifier
@@ -86,32 +91,32 @@ fun CalendarWidgetContent(
     ) {
         Column(modifier = GlanceModifier.fillMaxSize()) {
             if (showHeader) {
-                SectionHeader("Upcoming events", isRefreshing, refreshPhase)
+                SectionHeader("Upcoming events", isRefreshing, refreshPhase, fontScale)
                 Spacer(modifier = GlanceModifier.height(12.dp))
             }
             when {
-                !hasPermission -> PermissionMessage()
-                events.isEmpty() -> EmptyMessage()
+                !hasPermission -> PermissionMessage(fontScale)
+                events.isEmpty() -> EmptyMessage(fontScale)
                 isCompact -> {
                     if (allDayEvents.isNotEmpty()) {
-                        AllDaySection(allDayEvents)
+                        AllDaySection(allDayEvents, fontScale)
                         if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    EventList(timedEvents.take(2), accent = accent)
+                    EventList(timedEvents.take(2), accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
                 }
                 isFull -> {
                     if (allDayEvents.isNotEmpty()) {
-                        AllDaySection(allDayEvents)
+                        AllDaySection(allDayEvents, fontScale)
                         Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = showLocation, verticalPadding = 6.dp, accent = accent)
+                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = showLocation, verticalPadding = 6.dp, accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
                 }
                 else -> {
                     if (allDayEvents.isNotEmpty()) {
-                        AllDaySection(allDayEvents)
+                        AllDaySection(allDayEvents, fontScale)
                         if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    ScrollableEventList(timedEvents.take(4), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, verticalPadding = 6.dp, accent = accent)
+                    ScrollableEventList(timedEvents.take(4), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, verticalPadding = 6.dp, accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
                 }
             }
         }
@@ -120,12 +125,12 @@ fun CalendarWidgetContent(
 
 
 @Composable
-private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPhase: Int = 0) {
+private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPhase: Int = 0, fontScale: Float = 1f) {
     val context = LocalContext.current
     val bitmap = GlanceText.renderDotoText(
         context = context,
         text = text.uppercase(),
-        textSizeSp = 14f,
+        textSizeSp = 14f * fontScale,
     )
     Row(
         modifier = GlanceModifier.fillMaxWidth().clickable(actionRunCallback<RefreshActionCallback>()),
@@ -149,11 +154,11 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
 }
 
 @Composable
-private fun PermissionMessage() {
+private fun PermissionMessage(fontScale: Float = 1f) {
     val context = LocalContext.current
     Image(
         provider = ImageProvider(
-            GlanceText.renderDotoText(context, "Calendar permission required", 14f, VantaDotWidgetTheme.GreyLightArgb)
+            GlanceText.renderDotoText(context, "Calendar permission required", 14f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
         ),
         contentDescription = "Calendar permission required",
     )
@@ -213,21 +218,21 @@ private val INSPIRATIONAL_QUOTES = listOf(
 )
 
 @Composable
-private fun EmptyMessage() {
+private fun EmptyMessage(fontScale: Float = 1f) {
     val context = LocalContext.current
     val dayIndex = (System.currentTimeMillis() / 86_400_000).mod(INSPIRATIONAL_QUOTES.size)
     val quote = INSPIRATIONAL_QUOTES[dayIndex]
     Column {
         Image(
             provider = ImageProvider(
-                GlanceText.renderDotoText(context, "No upcoming events", 14f, VantaDotWidgetTheme.GreyLightArgb)
+                GlanceText.renderDotoText(context, "No upcoming events", 14f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
             ),
             contentDescription = "No upcoming events",
         )
         Spacer(modifier = GlanceModifier.height(8.dp))
         Image(
             provider = ImageProvider(
-                GlanceText.renderDotoText(context, quote, 12f, VantaDotWidgetTheme.GreyLightArgb)
+                GlanceText.renderDotoText(context, quote, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
             ),
             contentDescription = quote,
         )
@@ -235,7 +240,7 @@ private fun EmptyMessage() {
 }
 
 @Composable
-private fun AllDaySection(events: List<CalendarEvent>) {
+private fun AllDaySection(events: List<CalendarEvent>, fontScale: Float = 1f) {
     val context = LocalContext.current
     val widgetWidth = LocalSize.current.width
     // Available width: widget - outer padding(12*2) - inner box padding(10*2) - dot(8) - spacer(8) - right margin(12)
@@ -250,7 +255,7 @@ private fun AllDaySection(events: List<CalendarEvent>) {
         Column(modifier = GlanceModifier.fillMaxWidth()) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, "All day", 11f, VantaDotWidgetTheme.GreyLightArgb)
+                    GlanceText.renderDotoText(context, "All day", 11f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
                 ),
                 contentDescription = "All day",
             )
@@ -269,7 +274,7 @@ private fun AllDaySection(events: List<CalendarEvent>) {
                     )
                     Spacer(modifier = GlanceModifier.width(8.dp))
                     Image(
-                        provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, allDayTitleColor, maxWidthDp = titleMaxWidth)),
+                        provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f * fontScale, allDayTitleColor, maxWidthDp = titleMaxWidth)),
                         contentDescription = event.title,
                     )
                 }
@@ -317,6 +322,9 @@ private fun EventRow(
     showTime: Boolean = false,
     showLocation: Boolean = false,
     verticalPadding: Dp = 0.dp,
+    fontScale: Float = 1f,
+    use24HourFormat: Boolean = true,
+    showCompactTime: Boolean = false,
 ) {
     val context = LocalContext.current
     val widgetWidth = LocalSize.current.width
@@ -342,7 +350,7 @@ private fun EventRow(
             CalendarColorDot(event.calendarColor, style = dotStyle)
             Spacer(modifier = GlanceModifier.width(8.dp))
             Image(
-                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f, titleColor, maxWidthDp = titleMaxWidth)),
+                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f * fontScale, titleColor, maxWidthDp = titleMaxWidth)),
                 contentDescription = event.title,
             )
             if (event.hasVideoConference) {
@@ -355,18 +363,19 @@ private fun EventRow(
             }
         }
         if (showTime) {
+            val timeText = formatEventTime(event, use24HourFormat, showCompactTime)
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, formatEventTime(event), 12f, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
+                    GlanceText.renderDotoText(context, timeText, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
                 ),
-                contentDescription = formatEventTime(event),
+                contentDescription = timeText,
                 modifier = GlanceModifier.padding(start = 16.dp),
             )
         }
         if (showLocation && !event.location.isNullOrBlank()) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, event.location, 12f, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
+                    GlanceText.renderDotoText(context, event.location, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
                 ),
                 contentDescription = event.location,
                 modifier = GlanceModifier.padding(start = 16.dp),
@@ -376,12 +385,19 @@ private fun EventRow(
 }
 
 @Composable
-private fun EventList(events: List<CalendarEvent>, showTime: Boolean = false, accent: AccentColorPreset = AccentColorPreset.AMBER) {
+private fun EventList(
+    events: List<CalendarEvent>,
+    showTime: Boolean = false,
+    accent: AccentColorPreset = AccentColorPreset.AMBER,
+    fontScale: Float = 1f,
+    use24HourFormat: Boolean = true,
+    showCompactTime: Boolean = false,
+) {
     Column(modifier = GlanceModifier.fillMaxWidth()) {
         events.forEachIndexed { index, event ->
-            if (index > 0) DotSeparator()
+            if (index > 0) DotSeparator(fontScale)
             EventHighlight(calcUrgency(event), accent = accent) {
-                EventRow(event, showTime = showTime)
+                EventRow(event, showTime = showTime, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
             }
         }
     }
@@ -395,12 +411,15 @@ private fun ScrollableEventList(
     showLocation: Boolean = false,
     verticalPadding: Dp = 0.dp,
     accent: AccentColorPreset = AccentColorPreset.AMBER,
+    fontScale: Float = 1f,
+    use24HourFormat: Boolean = true,
+    showCompactTime: Boolean = false,
 ) {
     LazyColumn(modifier = modifier) {
         items(events, itemId = { it.id }) { event ->
             Column(modifier = GlanceModifier.fillMaxWidth()) {
                 EventHighlight(calcUrgency(event), accent = accent) {
-                    EventRow(event, showTime = showTime, showLocation = showLocation, verticalPadding = verticalPadding)
+                    EventRow(event, showTime = showTime, showLocation = showLocation, verticalPadding = verticalPadding, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
                 }
                 Spacer(modifier = GlanceModifier.height(4.dp))
             }
@@ -437,22 +456,24 @@ private fun CalendarColorDot(color: Int, style: CircleStyle = CircleStyle.FILLED
 }
 
 @Composable
-private fun DotSeparator() {
+private fun DotSeparator(fontScale: Float = 1f) {
     val context = LocalContext.current
     Box(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Image(
             provider = ImageProvider(
-                GlanceText.renderDotoText(context, "· · ·", 10f, VantaDotWidgetTheme.GreyMediumArgb)
+                GlanceText.renderDotoText(context, "· · ·", 10f * fontScale, VantaDotWidgetTheme.GreyMediumArgb)
             ),
             contentDescription = null,
         )
     }
 }
 
-private fun formatEventTime(event: CalendarEvent): String {
+private fun formatEventTime(event: CalendarEvent, use24HourFormat: Boolean = true, showCompactTime: Boolean = false): String {
     if (event.isAllDay) return "All day"
-    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    val pattern = if (use24HourFormat) "HH:mm" else "h:mm a"
+    val timeFormat = SimpleDateFormat(pattern, Locale.getDefault())
     val begin = timeFormat.format(Date(event.beginTime))
+    if (showCompactTime) return begin
     val end = timeFormat.format(Date(event.endTime))
     return "$begin – $end"
 }

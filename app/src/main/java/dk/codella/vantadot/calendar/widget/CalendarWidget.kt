@@ -37,7 +37,8 @@ class CalendarWidget : GlanceAppWidget() {
             val isRefreshing = prefs[IsRefreshingKey] ?: false
             val refreshPhase = prefs[RefreshPhaseKey] ?: 0
             val settings = WidgetSettings.fromPreferences(prefs)
-            val hasPermission = CalendarRepository(LocalContext.current).hasCalendarPermission()
+            val hasPermission = CalendarRepository(LocalContext.current).hasCalendarPermission() ||
+                (prefs[HasPermissionKey] ?: false)
             val now = System.currentTimeMillis()
 
             val allEvents = CalendarEvent.fromJsonArray(prefs[CachedEventsKey] ?: "[]")
@@ -56,6 +57,9 @@ class CalendarWidget : GlanceAppWidget() {
                 showHeader = settings.showSectionHeader,
                 showLocation = settings.showEventLocation,
                 accentColorIndex = settings.accentColorIndex,
+                use24HourFormat = settings.use24HourFormat,
+                showCompactTime = settings.showCompactTime,
+                fontSizePreset = settings.fontSizePreset,
             )
         }
     }
