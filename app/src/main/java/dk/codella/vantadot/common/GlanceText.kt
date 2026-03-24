@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.text.Layout
+import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.TextUtils
 import androidx.core.content.res.ResourcesCompat
@@ -113,6 +115,7 @@ object GlanceText {
         textSizeSp: Float = 24f,
         color: Int = android.graphics.Color.WHITE,
         maxWidthDp: Float? = null,
+        maxLines: Int? = null,
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val scaledDensity = context.resources.displayMetrics.scaledDensity
@@ -121,21 +124,37 @@ object GlanceText {
         val typeface = ResourcesCompat.getFont(context, R.font.doto)
             ?: Typeface.MONOSPACE
 
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             this.typeface = typeface
             this.textSize = textSizePx
             this.color = color
         }
 
-        val displayText = if (maxWidthDp != null) {
-            val maxWidthPx = maxWidthDp * density
-            TextUtils.ellipsize(text, TextPaint(paint), maxWidthPx, TextUtils.TruncateAt.END).toString()
-        } else {
-            text
+        // Multi-line wrapping when maxWidthDp is provided
+        if (maxWidthDp != null) {
+            val maxWidthPx = (maxWidthDp * density).roundToInt().coerceAtLeast(1)
+            val builder = StaticLayout.Builder.obtain(text, 0, text.length, textPaint, maxWidthPx)
+                .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                .setIncludePad(false)
+            if (maxLines != null) {
+                builder.setMaxLines(maxLines)
+                builder.setEllipsize(TextUtils.TruncateAt.END)
+            }
+            val layout = builder.build()
+
+            if (layout.width <= 0 || layout.height <= 0) {
+                return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+            }
+
+            val bitmap = Bitmap.createBitmap(layout.width, layout.height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            layout.draw(canvas)
+            return bitmap
         }
 
-        val textWidth = paint.measureText(displayText).roundToInt()
-        val metrics = paint.fontMetrics
+        // Single-line (no max width) — headers, messages, etc.
+        val textWidth = textPaint.measureText(text).roundToInt()
+        val metrics = textPaint.fontMetrics
         val textHeight = (metrics.bottom - metrics.top).roundToInt()
 
         if (textWidth <= 0 || textHeight <= 0) {
@@ -144,7 +163,7 @@ object GlanceText {
 
         val bitmap = Bitmap.createBitmap(textWidth, textHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.drawText(displayText, 0f, -metrics.top, paint)
+        canvas.drawText(text, 0f, -metrics.top, textPaint)
 
         return bitmap
     }
