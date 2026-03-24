@@ -41,11 +41,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import android.content.Context
 import dk.codella.vantadot.BuildConfig
 import dk.codella.vantadot.calendar.data.CalendarInfo
 import dk.codella.vantadot.calendar.data.CalendarRepository
-import dk.codella.vantadot.calendar.widget.CalendarWidget
 import dk.codella.vantadot.settings.AccentColorPreset
 import dk.codella.vantadot.settings.FontSizePreset
 import dk.codella.vantadot.settings.WidgetSettings
@@ -75,6 +73,7 @@ fun SettingsScreen(
     var compactTime by remember { mutableStateOf(initialSettings.showCompactTime) }
     var fontSizePreset by remember { mutableIntStateOf(initialSettings.fontSizePreset) }
     var refreshInterval by remember { mutableIntStateOf(initialSettings.refreshIntervalMinutes) }
+    var useStubData by remember { mutableStateOf(initialSettings.useStubData) }
 
     LaunchedEffect(hasCalendarPermission) {
         if (hasCalendarPermission) {
@@ -94,6 +93,7 @@ fun SettingsScreen(
         showCompactTime = compactTime,
         fontSizePreset = fontSizePreset,
         refreshIntervalMinutes = refreshInterval,
+        useStubData = useStubData,
     )
 
     fun save() {
@@ -277,12 +277,8 @@ fun SettingsScreen(
                 item { SectionLabel("DEBUG") }
 
                 item {
-                    val stubPrefs = context.getSharedPreferences(CalendarWidget.PREFS_NAME, Context.MODE_PRIVATE)
-                    var useStub by remember { mutableStateOf(stubPrefs.getBoolean(CalendarWidget.USE_STUB_KEY, false)) }
-                    SettingToggle("USE STUB DATA", useStub) {
-                        useStub = it
-                        stubPrefs.edit().putBoolean(CalendarWidget.USE_STUB_KEY, it).commit()
-                        save()
+                    SettingToggle("USE STUB DATA", useStubData) {
+                        useStubData = it; save()
                     }
                 }
             }

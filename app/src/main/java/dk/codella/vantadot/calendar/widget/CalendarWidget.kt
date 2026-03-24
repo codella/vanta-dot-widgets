@@ -14,10 +14,12 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.LocalContext
 import androidx.glance.currentState
+import dk.codella.vantadot.BuildConfig
 import dk.codella.vantadot.calendar.data.CalendarEvent
 import dk.codella.vantadot.calendar.data.CalendarRepository
 import dk.codella.vantadot.calendar.data.StubCalendarData
 import dk.codella.vantadot.settings.WidgetSettings
+import dk.codella.vantadot.settings.WidgetSettings.Companion.UseStubDataKey
 
 class CalendarWidget : GlanceAppWidget() {
 
@@ -26,7 +28,10 @@ class CalendarWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Bootstrap: if no cached events yet, fetch and cache them
+        // Bootstrap only: fetch events on first render (new widget).
+        // All other refreshes happen from explicit callers:
+        // saveSettings, RefreshActionCallback, CalendarUpdateWorker.
+        // Do NOT refresh here on every call — it overwrites fresh data with stale reads.
         val state = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
         if (state[CachedEventsKey] == null) {
             refreshEventsIntoState(context, id)
@@ -69,12 +74,12 @@ class CalendarWidget : GlanceAppWidget() {
         val RefreshPhaseKey = intPreferencesKey("refresh_phase")
         val CachedEventsKey = stringPreferencesKey("cached_events")
         val HasPermissionKey = booleanPreferencesKey("has_permission")
-        const val PREFS_NAME = "vantadot_debug"
-        const val USE_STUB_KEY = "use_stub_calendar"
 
-        suspend fun refreshEventsIntoState(context: Context, id: GlanceId) {
-            val useStub = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                .getBoolean(USE_STUB_KEY, false)
+        suspend fun refreshEventsIntoState(context: Context, id: GlanceId, useStubOverride: Boolean? = null) {
+            val useStub = if (useStubOverride != null) useStubOverride else {
+                val state = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
+                BuildConfig.DEBUG && (state[UseStubDataKey] ?: false)
+            }
             val repository = CalendarRepository(context)
             val hasPermission = useStub || repository.hasCalendarPermission()
 

@@ -18,6 +18,7 @@ data class WidgetSettings(
     val showCompactTime: Boolean = false,
     val fontSizePreset: Int = 1,
     val refreshIntervalMinutes: Int = DEFAULT_REFRESH_INTERVAL,
+    val useStubData: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_MAX_EVENTS = 8
@@ -34,6 +35,7 @@ data class WidgetSettings(
         val ShowCompactTimeKey = booleanPreferencesKey("show_compact_time")
         val FontSizePresetKey = intPreferencesKey("font_size_preset")
         val RefreshIntervalMinutesKey = intPreferencesKey("refresh_interval_minutes")
+        val UseStubDataKey = booleanPreferencesKey("use_stub_data")
 
         fun fromPreferences(prefs: Preferences) = WidgetSettings(
             showSectionHeader = prefs[ShowSectionHeaderKey] ?: true,
@@ -50,6 +52,7 @@ data class WidgetSettings(
             showCompactTime = prefs[ShowCompactTimeKey] ?: false,
             fontSizePreset = prefs[FontSizePresetKey] ?: 1,
             refreshIntervalMinutes = prefs[RefreshIntervalMinutesKey] ?: DEFAULT_REFRESH_INTERVAL,
+            useStubData = prefs[UseStubDataKey] ?: false,
         )
 
         fun writeTo(prefs: MutablePreferences, settings: WidgetSettings) {
@@ -64,6 +67,7 @@ data class WidgetSettings(
             prefs[ShowCompactTimeKey] = settings.showCompactTime
             prefs[FontSizePresetKey] = settings.fontSizePreset
             prefs[RefreshIntervalMinutesKey] = settings.refreshIntervalMinutes
+            prefs[UseStubDataKey] = settings.useStubData
         }
     }
 }

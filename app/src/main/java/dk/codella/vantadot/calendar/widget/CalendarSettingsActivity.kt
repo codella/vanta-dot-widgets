@@ -14,6 +14,7 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.appwidget.state.updateAppWidgetState
+import dk.codella.vantadot.BuildConfig
 import dk.codella.vantadot.VantaDotApp
 import dk.codella.vantadot.calendar.data.CalendarRepository
 import dk.codella.vantadot.settings.WidgetSettings
@@ -91,8 +92,8 @@ class CalendarSettingsActivity : ComponentActivity() {
                 updateAppWidgetState(context, id) { prefs ->
                     WidgetSettings.writeTo(prefs, settings)
                 }
-                // Re-fetch events (picks up stub data toggle, calendar filter changes, etc.)
-                CalendarWidget.refreshEventsIntoState(context, id)
+                CalendarWidget.refreshEventsIntoState(context, id,
+                    useStubOverride = BuildConfig.DEBUG && settings.useStubData)
                 CalendarWidget().update(context, id)
             }
             VantaDotApp.enqueuePeriodicCalendarUpdates(context, settings.refreshIntervalMinutes.toLong())
