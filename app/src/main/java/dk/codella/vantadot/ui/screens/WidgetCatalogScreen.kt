@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dk.codella.vantadot.calendar.widget.CalendarWidgetReceiver
+import dk.codella.vantadot.timer.widget.TimerWidgetReceiver
 import dk.codella.vantadot.ui.theme.VantaDotBlack
 
 @Composable
@@ -47,6 +48,16 @@ fun WidgetCatalogScreen(
                     hasPermission = hasCalendarPermission,
                     onRequestPermission = onRequestPermission,
                     receiverClass = CalendarWidgetReceiver::class.java,
+                )
+            }
+
+            item {
+                WidgetPreviewCard(
+                    widgetName = "TIMER",
+                    widgetDescription = "Countdown, stopwatch, and pomodoro timer",
+                    hasPermission = true,
+                    onRequestPermission = {},
+                    receiverClass = TimerWidgetReceiver::class.java,
                 )
             }
         }

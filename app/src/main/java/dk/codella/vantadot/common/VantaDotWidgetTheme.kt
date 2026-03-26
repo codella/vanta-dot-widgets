@@ -22,6 +22,19 @@ object VantaDotWidgetTheme {
     val GreyMediumArgb = GreyMedium.toArgb()
     val TentativeTextArgb = TentativeText.toArgb()
 
+    // Timer urgency colors
+    val TimerWarning = Color(0xFFD4A017)
+    val TimerUrgent = Color(0xFFFF8C00)
+    val TimerCritical = Color(0xFFE8212A)
+    val TimerComplete = Color(0xFF0F9D58)
+    val PomodoroBreak = Color(0xFF00BCD4)
+
+    val TimerWarningArgb = TimerWarning.toArgb()
+    val TimerUrgentArgb = TimerUrgent.toArgb()
+    val TimerCriticalArgb = TimerCritical.toArgb()
+    val TimerCompleteArgb = TimerComplete.toArgb()
+    val PomodoroBreakArgb = PomodoroBreak.toArgb()
+
     val CornerRadius = 16.dp
     val Padding = 12.dp
 }

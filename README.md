@@ -22,6 +22,23 @@ Shows upcoming events from any calendar synced to your device (Google, Outlook, 
 - **Empty state quotes** — when no events are upcoming, the widget shows one of 47 inspirational quotes (rotated daily)
 - **Custom font** — uses the [Doto](https://fonts.google.com/specimen/Doto) dot-matrix font, rendered as bitmaps since Glance doesn't support custom fonts
 
+## Timer Widget
+
+A countdown timer, stopwatch, and pomodoro timer in a resizable widget:
+
+- **Compact (4x2)** — time display + start/pause and reset controls
+- **Full (4x4)** — time display + dot-matrix progress bar + preset buttons + controls + pomodoro indicator
+
+### Features
+
+- **Three modes** — Countdown (set a duration), Stopwatch (count up), Pomodoro (auto-cycling work/break intervals)
+- **Quick presets** — tap 1M, 5M, 15M, or 25M to instantly start a countdown
+- **Urgency colors** — time display shifts white → amber → orange → red as countdown nears zero
+- **Pomodoro cycling** — automatically transitions between work and break periods with cycle counter
+- **Persistent** — runs as a foreground service, survives app backgrounding and process kills
+- **Notification controls** — persistent notification with pause/resume and reset while timer is running
+- **Completion alerts** — sound and vibration when timer finishes
+
 ## Requirements
 
 - Android 13+ (API 33)
@@ -48,7 +65,7 @@ If you're not using mise, set `JAVA_HOME` to any JDK 17 installation before runn
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-After installing, long-press on your home screen, tap "Widgets", and find **Vanta Dot > Calendar**. The companion app lets you preview widgets and grant calendar read permission.
+After installing, long-press on your home screen, tap "Widgets", and find **Vanta Dot > Calendar** or **Vanta Dot > Timer**. The companion app lets you preview widgets, pin them, and grant permissions.
 
 ## Project Structure
 
@@ -72,6 +89,20 @@ app/src/main/java/dk/codella/vantadot/
 │   └── worker/
 │       ├── CalendarUpdateWorker.kt    Periodic backup refresh (15 min)
 │       └── CalendarContentChangeWorker.kt  Reactive refresh on calendar changes
+├── timer/
+│   ├── data/
+│   │   └── TimerState.kt               Timer model (countdown/stopwatch/pomodoro)
+│   ├── service/
+│   │   └── TimerService.kt             Foreground service with 1s Handler ticking
+│   ├── notification/
+│   │   └── TimerNotificationManager.kt Notification channels + builders
+│   └── widget/
+│       ├── TimerWidget.kt              Glance widget (SizeMode.Exact)
+│       ├── TimerWidgetReceiver.kt      BroadcastReceiver
+│       ├── TimerWidgetContent.kt       All composable UI (time, progress, controls)
+│       ├── TimerWidgetSizes.kt         Size breakpoint constants
+│       ├── TimerSettings.kt            Settings data class
+│       └── callbacks/                  Start/pause, reset, preset, mode switch
 ├── settings/
 │   ├── AccentColorPreset.kt     Accent color options
 │   ├── FontSizePreset.kt        Font size options

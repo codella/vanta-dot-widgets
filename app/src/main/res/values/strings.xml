@@ -9,4 +9,6 @@
     <string name="grant_permission">Grant Permission</string>
     <string name="pin_widget">Pin Widget</string>
     <string name="all_day">All day</string>
+    <string name="timer_widget_name">Timer</string>
+    <string name="timer_widget_description">Countdown, stopwatch, and pomodoro timer</string>
 </resources>

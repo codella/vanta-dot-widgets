@@ -8,6 +8,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import dk.codella.vantadot.calendar.worker.CalendarContentChangeWorker
 import dk.codella.vantadot.calendar.worker.CalendarUpdateWorker
+import dk.codella.vantadot.timer.notification.TimerNotificationManager
 import java.util.concurrent.TimeUnit
 
 class VantaDotApp : Application() {
@@ -16,6 +17,7 @@ class VantaDotApp : Application() {
         super.onCreate()
         enqueuePeriodicCalendarUpdates(this)
         CalendarContentChangeWorker.enqueue(this)
+        TimerNotificationManager.createChannels(this)
     }
 
     companion object {

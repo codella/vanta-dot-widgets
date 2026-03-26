@@ -111,6 +111,40 @@ object GlanceText {
         return bitmap
     }
 
+    fun renderProgressBar(
+        context: Context,
+        widthDp: Float,
+        heightDp: Float = 6f,
+        progress: Float,
+        filledColor: Int = android.graphics.Color.WHITE,
+        emptyColor: Int = VantaDotWidgetTheme.GreyMediumArgb,
+        dotSizeDp: Float = 4f,
+        gapDp: Float = 2f,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val totalWidthPx = (widthDp * density).roundToInt().coerceAtLeast(1)
+        val totalHeightPx = (heightDp * density).roundToInt().coerceAtLeast(1)
+        val dotSizePx = dotSizeDp * density
+        val gapPx = gapDp * density
+        val step = dotSizePx + gapPx
+        val dotCount = ((totalWidthPx + gapPx) / step).toInt().coerceAtLeast(1)
+        val filledCount = (dotCount * progress.coerceIn(0f, 1f)).roundToInt()
+
+        val bitmap = Bitmap.createBitmap(totalWidthPx, totalHeightPx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val centerY = totalHeightPx / 2f
+
+        for (i in 0 until dotCount) {
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = if (i < filledCount) filledColor else emptyColor
+                style = Paint.Style.FILL
+            }
+            val x = i * step
+            canvas.drawRect(x, centerY - dotSizePx / 2, x + dotSizePx, centerY + dotSizePx / 2, paint)
+        }
+        return bitmap
+    }
+
     fun renderDotoText(
         context: Context,
         text: String,
