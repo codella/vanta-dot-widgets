@@ -119,7 +119,7 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
         textSizeSp = 14f * fontScale,
     )
     Row(
-        modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp).clickable(actionRunCallback<RefreshActionCallback>()),
+        modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp).clickable(actionRunCallback<RefreshActionCallback>()),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
