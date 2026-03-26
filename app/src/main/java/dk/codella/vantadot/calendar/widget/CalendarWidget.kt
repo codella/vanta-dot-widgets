@@ -56,6 +56,7 @@ class CalendarWidget : GlanceAppWidget() {
                 use24HourFormat = settings.use24HourFormat,
                 showCompactTime = settings.showCompactTime,
                 fontSizePreset = settings.fontSizePreset,
+                wrapText = settings.wrapText,
             )
         }
     }

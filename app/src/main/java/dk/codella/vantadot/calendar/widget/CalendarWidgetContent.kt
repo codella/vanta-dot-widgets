@@ -73,6 +73,7 @@ fun CalendarWidgetContent(
     use24HourFormat: Boolean = true,
     showCompactTime: Boolean = false,
     fontSizePreset: Int = 1,
+    wrapText: Boolean = false,
 ) {
     val size = LocalSize.current
     val isFull = size.height >= CalendarWidgetSizes.FULL.height
@@ -101,7 +102,7 @@ fun CalendarWidgetContent(
                         AllDaySection(allDayEvents, fontScale)
                         Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = if (isFull) showLocation else false, verticalPadding = 6.dp, accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
+                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = if (isFull) showLocation else false, verticalPadding = 6.dp, accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime, wrapText = wrapText)
                 }
             }
         }
@@ -310,6 +311,7 @@ private fun EventRow(
     fontScale: Float = 1f,
     use24HourFormat: Boolean = true,
     showCompactTime: Boolean = false,
+    wrapText: Boolean = false,
 ) {
     val context = LocalContext.current
     val widgetWidth = LocalSize.current.width
@@ -335,7 +337,7 @@ private fun EventRow(
             CalendarColorDot(event.calendarColor, style = dotStyle)
             Spacer(modifier = GlanceModifier.width(8.dp))
             Image(
-                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f * fontScale, titleColor, maxWidthDp = titleMaxWidth)),
+                provider = ImageProvider(GlanceText.renderDotoText(context, event.title, 14f * fontScale, titleColor, maxWidthDp = titleMaxWidth, maxLines = if (wrapText) null else 2)),
                 contentDescription = event.title,
             )
             if (event.hasVideoConference) {
@@ -361,7 +363,7 @@ private fun EventRow(
         if (displayLocation != null) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, displayLocation, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
+                    GlanceText.renderDotoText(context, displayLocation, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth, maxLines = if (wrapText) null else 1)
                 ),
                 contentDescription = displayLocation,
                 modifier = GlanceModifier.padding(start = 16.dp),
@@ -381,12 +383,13 @@ private fun ScrollableEventList(
     fontScale: Float = 1f,
     use24HourFormat: Boolean = true,
     showCompactTime: Boolean = false,
+    wrapText: Boolean = false,
 ) {
     LazyColumn(modifier = modifier) {
         items(events, itemId = { it.id }) { event ->
             Column(modifier = GlanceModifier.fillMaxWidth()) {
                 EventHighlight(calcUrgency(event), accent = accent) {
-                    EventRow(event, showTime = showTime, showLocation = showLocation, verticalPadding = verticalPadding, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
+                    EventRow(event, showTime = showTime, showLocation = showLocation, verticalPadding = verticalPadding, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime, wrapText = wrapText)
                 }
                 Spacer(modifier = GlanceModifier.height(4.dp))
             }

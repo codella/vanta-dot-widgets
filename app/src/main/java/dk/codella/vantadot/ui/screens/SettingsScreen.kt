@@ -72,6 +72,7 @@ fun SettingsScreen(
     var use24Hour by remember { mutableStateOf(initialSettings.use24HourFormat) }
     var compactTime by remember { mutableStateOf(initialSettings.showCompactTime) }
     var fontSizePreset by remember { mutableIntStateOf(initialSettings.fontSizePreset) }
+    var wrapText by remember { mutableStateOf(initialSettings.wrapText) }
     var useStubData by remember { mutableStateOf(initialSettings.useStubData) }
 
     LaunchedEffect(hasCalendarPermission) {
@@ -91,6 +92,7 @@ fun SettingsScreen(
         use24HourFormat = use24Hour,
         showCompactTime = compactTime,
         fontSizePreset = fontSizePreset,
+        wrapText = wrapText,
         useStubData = useStubData,
     )
 
@@ -165,6 +167,12 @@ fun SettingsScreen(
             item {
                 SettingToggle("COMPACT TIME (START ONLY)", compactTime) {
                     compactTime = it; save()
+                }
+            }
+
+            item {
+                SettingToggle("WRAP LONG TEXT", wrapText) {
+                    wrapText = it; save()
                 }
             }
 

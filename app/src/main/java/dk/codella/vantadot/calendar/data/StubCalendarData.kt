@@ -78,6 +78,36 @@ object StubCalendarData {
             isAllDay = true, calendarColor = COLORS[2], location = null,
         ))
 
+        // Edge-case length events
+        events.add(CalendarEvent(
+            id = 200, title = "Q4 Cross-Functional Strategic Alignment Workshop with Engineering, Product, Design, Marketing, and Executive Leadership Teams",
+            beginTime = nowMs + 15 * min, endTime = nowMs + 75 * min,
+            isAllDay = false, calendarColor = COLORS[3],
+            location = "The Very Long Conference Room Name on the 42nd Floor of Building C in the North Campus",
+            description = null,
+        ))
+        events.add(CalendarEvent(
+            id = 201, title = "1:1",
+            beginTime = nowMs + 80 * min, endTime = nowMs + 110 * min,
+            isAllDay = false, calendarColor = COLORS[1],
+            location = "https://meet.google.com/abc-defg-hij?authuser=0&hs=179&pli=1&entry=gmail",
+            description = null,
+        ))
+        events.add(CalendarEvent(
+            id = 202, title = "Retrospective: What Went Wrong with the Payment Gateway Migration and How We Can Prevent Similar Incidents in Future Releases",
+            beginTime = nowMs + 120 * min, endTime = nowMs + 180 * min,
+            isAllDay = false, calendarColor = COLORS[5],
+            location = "Room 4B https://zoom.us/j/98765432100?pwd=a1b2c3d4e5f6g7h8i9j0",
+            description = null,
+        ))
+        events.add(CalendarEvent(
+            id = 203, title = "X",
+            beginTime = nowMs + 185 * min, endTime = nowMs + 195 * min,
+            isAllDay = false, calendarColor = COLORS[0],
+            location = "A",
+            description = null,
+        ))
+
         // 47 timed events spread across the next 8 hours
         for (i in 1..47) {
             val offsetMin = i * 10L // every 10 minutes

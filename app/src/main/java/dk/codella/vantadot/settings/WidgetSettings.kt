@@ -17,6 +17,7 @@ data class WidgetSettings(
     val use24HourFormat: Boolean = true,
     val showCompactTime: Boolean = false,
     val fontSizePreset: Int = 1,
+    val wrapText: Boolean = false,
     val useStubData: Boolean = false,
 ) {
     companion object {
@@ -32,6 +33,7 @@ data class WidgetSettings(
         val Use24HourFormatKey = booleanPreferencesKey("use_24_hour_format")
         val ShowCompactTimeKey = booleanPreferencesKey("show_compact_time")
         val FontSizePresetKey = intPreferencesKey("font_size_preset")
+        val WrapTextKey = booleanPreferencesKey("wrap_text")
         val UseStubDataKey = booleanPreferencesKey("use_stub_data")
 
         fun fromPreferences(prefs: Preferences) = WidgetSettings(
@@ -48,6 +50,7 @@ data class WidgetSettings(
             use24HourFormat = prefs[Use24HourFormatKey] ?: true,
             showCompactTime = prefs[ShowCompactTimeKey] ?: false,
             fontSizePreset = prefs[FontSizePresetKey] ?: 1,
+            wrapText = prefs[WrapTextKey] ?: false,
             useStubData = prefs[UseStubDataKey] ?: false,
         )
 
@@ -62,6 +65,7 @@ data class WidgetSettings(
             prefs[Use24HourFormatKey] = settings.use24HourFormat
             prefs[ShowCompactTimeKey] = settings.showCompactTime
             prefs[FontSizePresetKey] = settings.fontSizePreset
+            prefs[WrapTextKey] = settings.wrapText
             prefs[UseStubDataKey] = settings.useStubData
         }
     }

@@ -16,6 +16,7 @@ Shows upcoming events from any calendar synced to your device (Google, Outlook, 
 - **Attachment detection** — shows a paperclip icon when Google Drive, Dropbox, OneDrive, Notion, or other file links are found
 - **All-day event grouping** — all-day events are displayed in a separate section with hollow dot indicators
 - **Manual refresh** — tap the header to trigger a refresh with animated loading dots
+- **Text overflow control** — by default, long titles are capped at 2 lines and locations at 1 line with ellipsis; a "Wrap long text" setting allows unlimited wrapping
 - **Smart location display** — URLs in event locations are cleaned up: mixed text+URL shows only the text, URL-only locations display just the domain name
 - **Auto-refresh** — reactive refresh on calendar changes, minute-tick receiver for urgency colors, and WorkManager every 15 minutes as a backup
 - **Empty state quotes** — when no events are upcoming, the widget shows one of 47 inspirational quotes (rotated daily)
@@ -59,7 +60,8 @@ app/src/main/java/dk/codella/vantadot/
 │   ├── data/
 │   │   ├── CalendarEvent.kt       Event model with video/attachment detection
 │   │   ├── CalendarRepository.kt  ContentProvider queries (7-day window)
-│   │   └── StubCalendarData.kt    Mock data for debug builds
+│   │   ├── StubCalendarData.kt    Mock data for debug builds (includes length edge cases)
+│   │   └── CalendarInfo.kt        Calendar metadata model
 │   ├── widget/
 │   │   ├── CalendarWidget.kt          Glance widget (SizeMode.Exact)
 │   │   ├── CalendarWidgetReceiver.kt  BroadcastReceiver + minute-tick + event pre-loading
