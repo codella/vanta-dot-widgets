@@ -28,15 +28,6 @@ class CalendarWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Bootstrap only: fetch events on first render (new widget).
-        // All other refreshes happen from explicit callers:
-        // saveSettings, RefreshActionCallback, CalendarUpdateWorker.
-        // Do NOT refresh here on every call — it overwrites fresh data with stale reads.
-        val state = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
-        if (state[CachedEventsKey] == null) {
-            refreshEventsIntoState(context, id)
-        }
-
         provideContent {
             val prefs = currentState<Preferences>()
             val isRefreshing = prefs[IsRefreshingKey] ?: false

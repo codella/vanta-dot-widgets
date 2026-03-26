@@ -6,10 +6,11 @@
     android:padding="12dp">
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/calendar_widget_name"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="..."
         android:textColor="@color/vantadot_white"
-        android:textSize="16sp" />
+        android:textSize="18sp" />
 
 </FrameLayout>

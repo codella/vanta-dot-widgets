@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.updateAll
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +23,19 @@ class CalendarWidgetReceiver : GlanceAppWidgetReceiver() {
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         MinuteTickReceiver.register(context)
+        // Pre-load events so the widget renders with data immediately
+        val result = goAsync()
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            try {
+                val manager = GlanceAppWidgetManager(context)
+                for (id in manager.getGlanceIds(CalendarWidget::class.java)) {
+                    CalendarWidget.refreshEventsIntoState(context, id)
+                }
+                CalendarWidget().updateAll(context)
+            } finally {
+                result.finish()
+            }
+        }
     }
 
     override fun onDisabled(context: Context) {
