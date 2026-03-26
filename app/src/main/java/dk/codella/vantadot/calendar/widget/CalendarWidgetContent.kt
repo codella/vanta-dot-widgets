@@ -483,5 +483,7 @@ private val URL_REGEX = Regex("""https?://\S+""")
 
 private fun cleanLocationDisplay(location: String): String? {
     val stripped = location.replace(URL_REGEX, "").trim()
-    return stripped.ifEmpty { null }
+    if (stripped.isNotEmpty()) return stripped
+    val firstUrl = URL_REGEX.find(location)?.value ?: return null
+    return try { java.net.URI(firstUrl).host } catch (_: Exception) { null }
 }
