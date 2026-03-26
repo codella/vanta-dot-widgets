@@ -51,7 +51,7 @@ The app uses **two separate theming systems** for different contexts:
 ### Glance-specific patterns
 
 - **`ColorProvider(day, night)`** — Glance's `ColorProvider` requires both day and night colors. Since this is a dark-only widget, pass the same color for both.
-- **Custom font rendering** — `GlanceText.renderDotoText()` renders the Doto font to a `Bitmap`, then displays it via `Image(ImageProvider(bitmap))`. This workaround is necessary because Glance `Text` only supports system fonts. Supports `maxWidthDp` for word-wrapping and `maxLines` for ellipsis truncation (used by the "Wrap long text" setting: off = titles capped at 2 lines, locations at 1 line; on = unlimited wrapping).
+- **Custom font rendering** — `GlanceText.renderDotoText()` renders the Doto font to a `Bitmap`, then displays it via `Image(ImageProvider(bitmap))`. This workaround is necessary because Glance `Text` only supports system fonts. Supports `maxWidthDp` for word-wrapping and `maxLines` for ellipsis truncation (used by the "Full event names" setting: off = titles capped at 2 lines, locations at 1 line; on = unlimited wrapping).
 - **Widget sizes** — Defined in `CalendarWidgetSizes`: EXPANDED (250×110dp), FULL (250×250dp). Minimum widget width is 250dp (enforced in `calendar_widget_info.xml`). The FULL breakpoint controls whether event locations are shown (requires sufficient height).
 - **Minute-tick updates** — `CalendarWidgetReceiver` registers a `MinuteTickReceiver` (via `ACTION_TIME_TICK`) so the urgency highlighting updates every minute while the widget is active.
 

@@ -171,7 +171,7 @@ fun SettingsScreen(
             }
 
             item {
-                SettingToggle("WRAP LONG TEXT", wrapText) {
+                SettingToggle("FULL EVENT NAMES", wrapText) {
                     wrapText = it; save()
                 }
             }
