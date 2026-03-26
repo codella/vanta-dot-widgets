@@ -75,7 +75,6 @@ fun CalendarWidgetContent(
     fontSizePreset: Int = 1,
 ) {
     val size = LocalSize.current
-    val isCompact = size.width < CalendarWidgetSizes.EXPANDED.width
     val isFull = size.height >= CalendarWidgetSizes.FULL.height
     val allDayEvents = events.filter { it.isAllDay }
     val timedEvents = events.filter { !it.isAllDay }.sortedBy { it.beginTime }
@@ -97,13 +96,6 @@ fun CalendarWidgetContent(
             when {
                 !hasPermission -> PermissionMessage(fontScale)
                 events.isEmpty() -> EmptyMessage(fontScale)
-                isCompact -> {
-                    if (allDayEvents.isNotEmpty()) {
-                        AllDaySection(allDayEvents, fontScale)
-                        if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
-                    }
-                    EventList(timedEvents.take(2), accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
-                }
                 isFull -> {
                     if (allDayEvents.isNotEmpty()) {
                         AllDaySection(allDayEvents, fontScale)
@@ -381,25 +373,6 @@ private fun EventRow(
                 contentDescription = displayLocation,
                 modifier = GlanceModifier.padding(start = 16.dp),
             )
-        }
-    }
-}
-
-@Composable
-private fun EventList(
-    events: List<CalendarEvent>,
-    showTime: Boolean = false,
-    accent: AccentColorPreset = AccentColorPreset.AMBER,
-    fontScale: Float = 1f,
-    use24HourFormat: Boolean = true,
-    showCompactTime: Boolean = false,
-) {
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
-        events.forEachIndexed { index, event ->
-            if (index > 0) DotSeparator(fontScale)
-            EventHighlight(calcUrgency(event), accent = accent) {
-                EventRow(event, showTime = showTime, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
-            }
         }
     }
 }
