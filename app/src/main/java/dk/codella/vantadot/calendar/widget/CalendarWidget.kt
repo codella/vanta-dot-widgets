@@ -1,11 +1,13 @@
 package dk.codella.vantadot.calendar.widget
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
+import androidx.glance.LocalSize
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
@@ -37,13 +39,19 @@ class CalendarWidget : GlanceAppWidget() {
                 (prefs[HasPermissionKey] ?: false)
             val now = System.currentTimeMillis()
 
-            val allEvents = CalendarEvent.fromJsonArray(prefs[CachedEventsKey] ?: "[]")
-                .filter { it.isAllDay || it.endTime > now }
+            val events = try {
+                CalendarEvent.fromJsonArray(prefs[CachedEventsKey] ?: "[]")
+                    .filter { it.isAllDay || it.endTime > now }
+                    .let { list -> if (!settings.showAllDayEvents) list.filter { !it.isAllDay } else list }
+                    .let { list -> if (!settings.showTentativeEvents) list.filter { !it.isTentative } else list }
+                    .take(settings.maxEvents)
+            } catch (e: Throwable) {
+                Log.e(TAG, "Error parsing events", e)
+                emptyList()
+            }
 
-            val events = allEvents
-                .let { list -> if (!settings.showAllDayEvents) list.filter { !it.isAllDay } else list }
-                .let { list -> if (!settings.showTentativeEvents) list.filter { !it.isTentative } else list }
-                .take(settings.maxEvents)
+            val size = LocalSize.current
+            Log.d(TAG, "provideContent: size=${size.width}x${size.height}, events=${events.size}")
 
             CalendarWidgetContent(
                 events = events,
@@ -62,6 +70,7 @@ class CalendarWidget : GlanceAppWidget() {
     }
 
     companion object {
+        private const val TAG = "CalendarWidget"
         val IsRefreshingKey = booleanPreferencesKey("is_refreshing")
         val RefreshPhaseKey = intPreferencesKey("refresh_phase")
         val CachedEventsKey = stringPreferencesKey("cached_events")

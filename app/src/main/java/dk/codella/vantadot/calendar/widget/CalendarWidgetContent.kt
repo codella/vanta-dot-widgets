@@ -230,7 +230,7 @@ private fun AllDaySection(events: List<CalendarEvent>, fontScale: Float = 1f) {
     val context = LocalContext.current
     val widgetWidth = LocalSize.current.width
     // Available width: widget - outer padding(12*2) - inner box padding(10*2) - dot(8) - spacer(8) - right margin(12)
-    val titleMaxWidth = (widgetWidth - 72.dp).value
+    val titleMaxWidth = (widgetWidth - 72.dp).value.coerceAtLeast(40f)
     Box(
         modifier = GlanceModifier
             .fillMaxWidth()
@@ -320,9 +320,9 @@ private fun EventRow(
     if (event.hasVideoConference) iconsWidth += 18.dp
     if (event.hasAttachments) iconsWidth += 18.dp
     // Available width for title: widget - outer padding(12*2) - column start(10) - dot(8) - spacer(8) - icons - right margin(12)
-    val titleMaxWidth = (widgetWidth - 62.dp - iconsWidth).value
+    val titleMaxWidth = (widgetWidth - 62.dp - iconsWidth).value.coerceAtLeast(40f)
     // Available width for time/location: widget - outer padding(12*2) - column start(10) - inner start padding(16) - right margin(12)
-    val detailMaxWidth = (widgetWidth - 62.dp).value
+    val detailMaxWidth = (widgetWidth - 62.dp).value.coerceAtLeast(40f)
     val titleColor = if (event.isTentative) VantaDotWidgetTheme.TentativeTextArgb else android.graphics.Color.WHITE
     val dotStyle = when {
         event.isTentative -> CircleStyle.DASHED
