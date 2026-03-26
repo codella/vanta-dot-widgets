@@ -4,11 +4,10 @@ Minimalist home screen widgets for Android, inspired by the Nothing OS aesthetic
 
 ## Calendar Widget
 
-Shows upcoming events from your device calendar in a resizable widget with three layout modes:
+Shows upcoming events from any calendar synced to your device (Google, Outlook, CalDAV, etc.) in a resizable widget with two layout modes:
 
-- **Compact (2x2)** — date header + 2 events
-- **Expanded (4x2)** — date header + 4 events with color dots and times
-- **Full (4x4)** — date header + scrollable list of up to 8 events with times, locations, and icons
+- **Expanded (4x2)** — header + scrollable list of up to 20 events with color dots, times, and icons
+- **Full (4x4)** — same as expanded, plus event locations
 
 ### Features
 
@@ -17,7 +16,8 @@ Shows upcoming events from your device calendar in a resizable widget with three
 - **Attachment detection** — shows a paperclip icon when Google Drive, Dropbox, OneDrive, Notion, or other file links are found
 - **All-day event grouping** — all-day events are displayed in a separate section with hollow dot indicators
 - **Manual refresh** — tap the header to trigger a refresh with animated loading dots
-- **Auto-refresh** — WorkManager updates every 15 minutes; a minute-tick receiver keeps urgency colors current
+- **Smart location display** — URLs in event locations are cleaned up: mixed text+URL shows only the text, URL-only locations display just the domain name
+- **Auto-refresh** — reactive refresh on calendar changes, minute-tick receiver for urgency colors, and WorkManager every 15 minutes as a backup
 - **Empty state quotes** — when no events are upcoming, the widget shows one of 47 inspirational quotes (rotated daily)
 - **Custom font** — uses the [Doto](https://fonts.google.com/specimen/Doto) dot-matrix font, rendered as bitmaps since Glance doesn't support custom fonts
 
@@ -58,21 +58,28 @@ app/src/main/java/dk/codella/vantadot/
 ├── calendar/
 │   ├── data/
 │   │   ├── CalendarEvent.kt       Event model with video/attachment detection
-│   │   ├── CalendarRepository.kt  ContentProvider queries (7-day window, max 8 events)
+│   │   ├── CalendarRepository.kt  ContentProvider queries (7-day window)
 │   │   └── StubCalendarData.kt    Mock data for debug builds
 │   ├── widget/
-│   │   ├── CalendarWidget.kt          Glance widget with responsive breakpoints
-│   │   ├── CalendarWidgetReceiver.kt  BroadcastReceiver + minute-tick updater
+│   │   ├── CalendarWidget.kt          Glance widget (SizeMode.Exact)
+│   │   ├── CalendarWidgetReceiver.kt  BroadcastReceiver + minute-tick + event pre-loading
+│   │   ├── CalendarSettingsActivity.kt Widget configuration activity
 │   │   ├── CalendarWidgetContent.kt   All composable UI (urgency, layouts, empty state)
 │   │   ├── CalendarWidgetSizes.kt     Size breakpoint constants
 │   │   └── RefreshActionCallback.kt   Manual refresh with loading animation
 │   └── worker/
-│       └── CalendarUpdateWorker.kt    Periodic refresh every 15 minutes
+│       ├── CalendarUpdateWorker.kt    Periodic backup refresh (15 min)
+│       └── CalendarContentChangeWorker.kt  Reactive refresh on calendar changes
+├── settings/
+│   ├── AccentColorPreset.kt     Accent color options
+│   ├── FontSizePreset.kt        Font size options
+│   └── WidgetSettings.kt        Settings data class + Glance state persistence
 ├── common/
 │   ├── VantaDotWidgetTheme.kt    Widget colors, urgency palette, dimensions
 │   └── GlanceText.kt            Doto font bitmap rendering + circle indicators
 └── ui/
     ├── screens/
+    │   ├── SettingsScreen.kt         Widget settings UI
     │   ├── WidgetCatalogScreen.kt    Main screen with debug stub toggle
     │   └── WidgetPreviewCard.kt      Permission request + pin widget button
     └── theme/

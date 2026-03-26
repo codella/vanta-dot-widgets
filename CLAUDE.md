@@ -36,11 +36,11 @@ This is a Nothing OS-styled Android home screen widget app built with **Jetpack 
 
 ### Layer structure
 
-- **`calendar/data/`** — `CalendarRepository` queries Android's `CalendarContract.Instances` ContentProvider for 7 days of upcoming events (max 8). `CalendarEvent` is a plain data class with computed properties for detecting video conference links and file attachments in event descriptions/locations.
-- **`calendar/widget/`** — Glance widget implementation. `CalendarWidget` uses `SizeMode.Responsive` with three breakpoints (COMPACT 2×2, EXPANDED 4×2, FULL 4×4). `CalendarWidgetContent` renders different layouts based on `LocalSize` — compact shows 2 events, expanded shows 4, full shows 8 in a `LazyColumn`. Includes an urgency system that color-codes events based on time until start (IN_PROGRESS, HIGH, MEDIUM, LOW, SUBTLE, NONE). `RefreshActionCallback` handles manual refresh with animated loading dots.
-- **`calendar/worker/`** — `CalendarUpdateWorker` (WorkManager `CoroutineWorker`) refreshes all widget instances every 15 minutes. Scheduled in `VantaDotApp.onCreate()` with battery-not-low constraint.
+- **`calendar/data/`** — `CalendarRepository` queries Android's `CalendarContract.Instances` ContentProvider for 7 days of upcoming events. `CalendarEvent` is a plain data class with computed properties for detecting video conference links and file attachments in event descriptions/locations.
+- **`calendar/widget/`** — Glance widget implementation. `CalendarWidget` uses `SizeMode.Exact` with two layout modes (EXPANDED 4×2, FULL 4×4). `CalendarWidgetContent` renders a scrollable event list in both modes (up to 20 events); FULL additionally shows event locations. Includes an urgency system that color-codes events based on time until start (IN_PROGRESS, HIGH, MEDIUM, LOW, SUBTLE, NONE). `RefreshActionCallback` handles manual refresh with animated loading dots. `CalendarWidgetReceiver.onUpdate` pre-loads events so the widget populates immediately on placement. URLs in event locations are cleaned up: mixed text+URL shows only the text, URL-only locations display just the domain name.
+- **`calendar/worker/`** — `CalendarUpdateWorker` (WorkManager `CoroutineWorker`) refreshes all widget instances every 15 minutes as a backup. Scheduled in `VantaDotApp.onCreate()` with battery-not-low constraint. `CalendarContentChangeWorker` reactively refreshes when calendar data changes via ContentProvider URI triggers. The primary refresh mechanisms are reactive (content changes) and per-minute (urgency re-render); the periodic worker is a fallback.
 - **`common/`** — `VantaDotWidgetTheme` holds widget-specific color/spacing constants including urgency highlight and accent colors. `GlanceText` renders text as bitmaps using the custom Doto font (since Glance doesn't support custom fonts natively), and also provides filled/hollow circle rendering for event indicators.
-- **`ui/`** — Jetpack Compose UI for `MainActivity`: theme (Material3 dark), `WidgetCatalogScreen` (with debug-only stub data toggle), and `WidgetPreviewCard` (permission request + pin widget flow).
+- **`ui/`** — Jetpack Compose UI for `MainActivity`: theme (Material3 dark), `WidgetCatalogScreen` (with debug-only stub data toggle), `WidgetPreviewCard` (permission request + pin widget flow), and `SettingsScreen` (widget configuration: display toggles, max events, accent color, font size, calendar selection).
 
 ### Two theming systems
 
@@ -52,7 +52,7 @@ The app uses **two separate theming systems** for different contexts:
 
 - **`ColorProvider(day, night)`** — Glance's `ColorProvider` requires both day and night colors. Since this is a dark-only widget, pass the same color for both.
 - **Custom font rendering** — `GlanceText.renderDotoText()` renders the Doto font to a `Bitmap`, then displays it via `Image(ImageProvider(bitmap))`. This workaround is necessary because Glance `Text` only supports system fonts.
-- **Widget sizes** — Defined in `CalendarWidgetSizes`: COMPACT (110×110dp), EXPANDED (250×110dp), FULL (250×250dp). The widget adapts its layout based on which size breakpoint is active.
+- **Widget sizes** — Defined in `CalendarWidgetSizes`: EXPANDED (250×110dp), FULL (250×250dp). Minimum widget width is 250dp (enforced in `calendar_widget_info.xml`). The FULL breakpoint controls whether event locations are shown (requires sufficient height).
 - **Minute-tick updates** — `CalendarWidgetReceiver` registers a `MinuteTickReceiver` (via `ACTION_TIME_TICK`) so the urgency highlighting updates every minute while the widget is active.
 
 ### ProGuard
