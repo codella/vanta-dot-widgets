@@ -96,19 +96,12 @@ fun CalendarWidgetContent(
             when {
                 !hasPermission -> PermissionMessage(fontScale)
                 events.isEmpty() -> EmptyMessage(fontScale)
-                isFull -> {
+                else -> {
                     if (allDayEvents.isNotEmpty()) {
                         AllDaySection(allDayEvents, fontScale)
                         Spacer(modifier = GlanceModifier.height(8.dp))
                     }
-                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = showLocation, verticalPadding = 6.dp, accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
-                }
-                else -> {
-                    if (allDayEvents.isNotEmpty()) {
-                        AllDaySection(allDayEvents, fontScale)
-                        if (timedEvents.isNotEmpty()) Spacer(modifier = GlanceModifier.height(8.dp))
-                    }
-                    ScrollableEventList(timedEvents.take(4), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, verticalPadding = 6.dp, accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
+                    ScrollableEventList(timedEvents.take(20), modifier = GlanceModifier.defaultWeight().fillMaxWidth(), showTime = true, showLocation = if (isFull) showLocation else false, verticalPadding = 6.dp, accent = accent, fontScale = fontScale, use24HourFormat = use24HourFormat, showCompactTime = showCompactTime)
                 }
             }
         }
