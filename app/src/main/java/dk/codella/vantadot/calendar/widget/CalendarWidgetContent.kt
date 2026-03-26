@@ -372,12 +372,13 @@ private fun EventRow(
                 modifier = GlanceModifier.padding(start = 16.dp),
             )
         }
-        if (showLocation && !event.location.isNullOrBlank()) {
+        val displayLocation = if (showLocation) event.location?.let { cleanLocationDisplay(it) } else null
+        if (displayLocation != null) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, event.location, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
+                    GlanceText.renderDotoText(context, displayLocation, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb, maxWidthDp = detailMaxWidth)
                 ),
-                contentDescription = event.location,
+                contentDescription = displayLocation,
                 modifier = GlanceModifier.padding(start = 16.dp),
             )
         }
@@ -470,10 +471,17 @@ private fun DotSeparator(fontScale: Float = 1f) {
 
 private fun formatEventTime(event: CalendarEvent, use24HourFormat: Boolean = true, showCompactTime: Boolean = false): String {
     if (event.isAllDay) return "All day"
-    val pattern = if (use24HourFormat) "HH:mm" else "h:mm a"
+    val pattern = if (use24HourFormat) "HH:mm" else "h:mma"
     val timeFormat = SimpleDateFormat(pattern, Locale.getDefault())
     val begin = timeFormat.format(Date(event.beginTime))
     if (showCompactTime) return begin
     val end = timeFormat.format(Date(event.endTime))
     return "$begin – $end"
+}
+
+private val URL_REGEX = Regex("""https?://\S+""")
+
+private fun cleanLocationDisplay(location: String): String? {
+    val stripped = location.replace(URL_REGEX, "").trim()
+    return stripped.ifEmpty { null }
 }

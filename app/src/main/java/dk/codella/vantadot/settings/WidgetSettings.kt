@@ -17,12 +17,10 @@ data class WidgetSettings(
     val use24HourFormat: Boolean = true,
     val showCompactTime: Boolean = false,
     val fontSizePreset: Int = 1,
-    val refreshIntervalMinutes: Int = DEFAULT_REFRESH_INTERVAL,
     val useStubData: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_MAX_EVENTS = 8
-        const val DEFAULT_REFRESH_INTERVAL = 15
 
         val ShowSectionHeaderKey = booleanPreferencesKey("show_section_header")
         val ShowAllDayEventsKey = booleanPreferencesKey("show_all_day_events")
@@ -34,7 +32,6 @@ data class WidgetSettings(
         val Use24HourFormatKey = booleanPreferencesKey("use_24_hour_format")
         val ShowCompactTimeKey = booleanPreferencesKey("show_compact_time")
         val FontSizePresetKey = intPreferencesKey("font_size_preset")
-        val RefreshIntervalMinutesKey = intPreferencesKey("refresh_interval_minutes")
         val UseStubDataKey = booleanPreferencesKey("use_stub_data")
 
         fun fromPreferences(prefs: Preferences) = WidgetSettings(
@@ -51,7 +48,6 @@ data class WidgetSettings(
             use24HourFormat = prefs[Use24HourFormatKey] ?: true,
             showCompactTime = prefs[ShowCompactTimeKey] ?: false,
             fontSizePreset = prefs[FontSizePresetKey] ?: 1,
-            refreshIntervalMinutes = prefs[RefreshIntervalMinutesKey] ?: DEFAULT_REFRESH_INTERVAL,
             useStubData = prefs[UseStubDataKey] ?: false,
         )
 
@@ -66,7 +62,6 @@ data class WidgetSettings(
             prefs[Use24HourFormatKey] = settings.use24HourFormat
             prefs[ShowCompactTimeKey] = settings.showCompactTime
             prefs[FontSizePresetKey] = settings.fontSizePreset
-            prefs[RefreshIntervalMinutesKey] = settings.refreshIntervalMinutes
             prefs[UseStubDataKey] = settings.useStubData
         }
     }

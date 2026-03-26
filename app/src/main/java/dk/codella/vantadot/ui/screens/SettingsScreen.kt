@@ -72,7 +72,6 @@ fun SettingsScreen(
     var use24Hour by remember { mutableStateOf(initialSettings.use24HourFormat) }
     var compactTime by remember { mutableStateOf(initialSettings.showCompactTime) }
     var fontSizePreset by remember { mutableIntStateOf(initialSettings.fontSizePreset) }
-    var refreshInterval by remember { mutableIntStateOf(initialSettings.refreshIntervalMinutes) }
     var useStubData by remember { mutableStateOf(initialSettings.useStubData) }
 
     LaunchedEffect(hasCalendarPermission) {
@@ -92,7 +91,6 @@ fun SettingsScreen(
         use24HourFormat = use24Hour,
         showCompactTime = compactTime,
         fontSizePreset = fontSizePreset,
-        refreshIntervalMinutes = refreshInterval,
         useStubData = useStubData,
     )
 
@@ -200,20 +198,6 @@ fun SettingsScreen(
                     selectedIndex = fontSizePreset,
                 ) {
                     fontSizePreset = it; save()
-                }
-            }
-
-            item { Spacer(modifier = Modifier.height(12.dp)) }
-
-            item { SectionLabel("REFRESH INTERVAL") }
-
-            item {
-                val intervals = listOf(15, 30, 60)
-                SegmentedSelector(
-                    options = intervals.map { "${it} MIN" },
-                    selectedIndex = intervals.indexOf(refreshInterval).coerceAtLeast(0),
-                ) {
-                    refreshInterval = intervals[it]; save()
                 }
             }
 

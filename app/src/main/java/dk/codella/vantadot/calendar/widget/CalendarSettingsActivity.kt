@@ -15,7 +15,6 @@ import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.appwidget.state.updateAppWidgetState
 import dk.codella.vantadot.BuildConfig
-import dk.codella.vantadot.VantaDotApp
 import dk.codella.vantadot.calendar.data.CalendarRepository
 import dk.codella.vantadot.settings.WidgetSettings
 import dk.codella.vantadot.ui.screens.SettingsScreen
@@ -96,7 +95,6 @@ class CalendarSettingsActivity : ComponentActivity() {
                     useStubOverride = BuildConfig.DEBUG && settings.useStubData)
                 CalendarWidget().update(context, id)
             }
-            VantaDotApp.enqueuePeriodicCalendarUpdates(context, settings.refreshIntervalMinutes.toLong())
         }
     }
 }

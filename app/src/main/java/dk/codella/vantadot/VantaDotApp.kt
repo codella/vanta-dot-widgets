@@ -19,13 +19,13 @@ class VantaDotApp : Application() {
     }
 
     companion object {
-        fun enqueuePeriodicCalendarUpdates(context: Context, intervalMinutes: Long = 15) {
+        fun enqueuePeriodicCalendarUpdates(context: Context) {
             val constraints = Constraints.Builder()
                 .setRequiresBatteryNotLow(true)
                 .build()
 
             val workRequest = PeriodicWorkRequestBuilder<CalendarUpdateWorker>(
-                intervalMinutes, TimeUnit.MINUTES,
+                15, TimeUnit.MINUTES,
             )
                 .setConstraints(constraints)
                 .build()
