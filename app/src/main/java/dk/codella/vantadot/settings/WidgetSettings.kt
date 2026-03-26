@@ -20,7 +20,7 @@ data class WidgetSettings(
     val useStubData: Boolean = false,
 ) {
     companion object {
-        const val DEFAULT_MAX_EVENTS = 8
+        const val DEFAULT_MAX_EVENTS = 20
 
         val ShowSectionHeaderKey = booleanPreferencesKey("show_section_header")
         val ShowAllDayEventsKey = booleanPreferencesKey("show_all_day_events")
