@@ -142,12 +142,14 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
 @Composable
 private fun PermissionMessage(fontScale: Float = 1f) {
     val context = LocalContext.current
-    Image(
-        provider = ImageProvider(
-            GlanceText.renderDotoText(context, "Calendar permission required", 14f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
-        ),
-        contentDescription = "Calendar permission required",
-    )
+    Box(modifier = GlanceModifier.padding(start = 10.dp)) {
+        Image(
+            provider = ImageProvider(
+                GlanceText.renderDotoText(context, "Calendar permission required", 14f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
+            ),
+            contentDescription = "Calendar permission required",
+        )
+    }
 }
 
 private val INSPIRATIONAL_QUOTES = listOf(
@@ -208,7 +210,7 @@ private fun EmptyMessage(fontScale: Float = 1f) {
     val context = LocalContext.current
     val dayIndex = (System.currentTimeMillis() / 86_400_000).mod(INSPIRATIONAL_QUOTES.size)
     val quote = INSPIRATIONAL_QUOTES[dayIndex]
-    Column {
+    Column(modifier = GlanceModifier.padding(start = 10.dp)) {
         Image(
             provider = ImageProvider(
                 GlanceText.renderDotoText(context, "No upcoming events", 14f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
