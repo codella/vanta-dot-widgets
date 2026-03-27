@@ -21,7 +21,9 @@ import dk.codella.vantadot.ui.theme.VantaDotBlack
 @Composable
 fun WidgetCatalogScreen(
     hasCalendarPermission: Boolean,
-    onRequestPermission: () -> Unit,
+    onRequestCalendarPermission: () -> Unit,
+    hasNotificationPermission: Boolean,
+    onRequestNotificationPermission: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -46,17 +48,16 @@ fun WidgetCatalogScreen(
                     widgetName = "CALENDAR",
                     widgetDescription = "Upcoming events from your calendar",
                     hasPermission = hasCalendarPermission,
-                    onRequestPermission = onRequestPermission,
+                    onRequestPermission = onRequestCalendarPermission,
                     receiverClass = CalendarWidgetReceiver::class.java,
                 )
             }
-
             item {
                 WidgetPreviewCard(
                     widgetName = "TIMER",
-                    widgetDescription = "Countdown, stopwatch, and pomodoro timer",
-                    hasPermission = true,
-                    onRequestPermission = {},
+                    widgetDescription = "Countdown timer with preset durations",
+                    hasPermission = hasNotificationPermission,
+                    onRequestPermission = onRequestNotificationPermission,
                     receiverClass = TimerWidgetReceiver::class.java,
                 )
             }

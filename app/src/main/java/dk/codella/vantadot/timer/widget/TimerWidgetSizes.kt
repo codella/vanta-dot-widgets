@@ -4,6 +4,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 
 object TimerWidgetSizes {
-    val COMPACT = DpSize(250.dp, 110.dp)  // 4×2
-    val FULL = DpSize(250.dp, 250.dp)     // 4×4
+    val COMPACT = DpSize(180.dp, 110.dp)  // 3x2: time + controls
+    val FULL = DpSize(180.dp, 220.dp)     // 3x4: time + controls + presets
 }

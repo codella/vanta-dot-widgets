@@ -3,8 +3,8 @@
 
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".VantaDotApp"
@@ -41,20 +41,21 @@
                 android:resource="@xml/calendar_widget_info" />
         </receiver>
 
-        <service
-            android:name=".timer.service.TimerService"
-            android:exported="false" />
-
         <receiver
             android:name=".timer.widget.TimerWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/timer_widget_info" />
         </receiver>
+
+        <receiver
+            android:name=".timer.service.TimerAlarmReceiver"
+            android:exported="false" />
 
     </application>
 

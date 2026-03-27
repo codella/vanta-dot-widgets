@@ -14,10 +14,14 @@
 # Glance ActionCallback must not be obfuscated
 -keep class dk.codella.vantadot.calendar.widget.RefreshActionCallback { *; }
 
-# Timer widget
+# Timer widget receiver and callbacks
 -keep class dk.codella.vantadot.timer.widget.TimerWidgetReceiver { *; }
--keep class dk.codella.vantadot.timer.widget.callbacks.** { *; }
--keep class dk.codella.vantadot.timer.service.TimerService { *; }
+-keep class dk.codella.vantadot.timer.widget.StartPauseActionCallback { *; }
+-keep class dk.codella.vantadot.timer.widget.ResetActionCallback { *; }
+-keep class dk.codella.vantadot.timer.widget.PresetActionCallback { *; }
+
+# Timer alarm receiver
+-keep class dk.codella.vantadot.timer.service.TimerAlarmReceiver { *; }
 
 # Keep Glance internals
 -keep class androidx.glance.** { *; }

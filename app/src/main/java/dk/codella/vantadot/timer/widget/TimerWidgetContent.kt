@@ -1,6 +1,7 @@
 package dk.codella.vantadot.timer.widget
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
@@ -24,25 +25,22 @@ import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import dk.codella.vantadot.common.GlanceText
 import dk.codella.vantadot.common.VantaDotWidgetTheme
-import androidx.compose.ui.graphics.toArgb
 import dk.codella.vantadot.settings.AccentColorPreset
 import dk.codella.vantadot.settings.FontSizePreset
-import dk.codella.vantadot.timer.data.TimerMode
-import dk.codella.vantadot.timer.data.TimerState
-import dk.codella.vantadot.timer.widget.callbacks.ModeSwitchActionCallback
-import dk.codella.vantadot.timer.widget.callbacks.PresetActionCallback
-import dk.codella.vantadot.timer.widget.callbacks.ResetActionCallback
-import dk.codella.vantadot.timer.widget.callbacks.StartPauseActionCallback
+import dk.codella.vantadot.timer.data.TimerStatus
+import dk.codella.vantadot.timer.data.TimerWidgetState
 
 @Composable
 fun TimerWidgetContent(
-    timerState: TimerState,
-    settings: TimerSettings,
+    timerState: TimerWidgetState,
+    fontSizePreset: Int = 1,
+    accentColorIndex: Int = 0,
 ) {
     val size = LocalSize.current
     val isFull = size.height >= TimerWidgetSizes.FULL.height
-    val accent = AccentColorPreset.fromIndex(settings.accentColorIndex)
-    val fontScale = FontSizePreset.fromIndex(settings.fontSizePreset).scaleFactor
+    val fontScale = FontSizePreset.fromIndex(fontSizePreset).scaleFactor
+    val accent = AccentColorPreset.fromIndex(accentColorIndex)
+    val remainingMillis = timerState.remainingMillis
 
     Box(
         modifier = GlanceModifier
@@ -55,152 +53,94 @@ fun TimerWidgetContent(
             modifier = GlanceModifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Mode indicator
-            ModeLabel(timerState.mode, fontScale)
-
-            Spacer(modifier = GlanceModifier.height(if (isFull) 16.dp else 8.dp))
-
-            // Large time display
-            TimeDisplay(timerState, fontScale, accent)
-
-            if (isFull) {
-                // Progress bar (countdown/pomodoro only)
-                if (timerState.mode != TimerMode.STOPWATCH && timerState.totalDurationMs > 0) {
-                    Spacer(modifier = GlanceModifier.height(12.dp))
-                    ProgressBar(timerState, size.width, accent)
-                }
-
-                Spacer(modifier = GlanceModifier.height(12.dp))
-
-                // Preset buttons (countdown mode only, when not running)
-                if (timerState.mode == TimerMode.COUNTDOWN && !timerState.isRunning && !timerState.isCompleted) {
-                    PresetRow(fontScale)
-                    Spacer(modifier = GlanceModifier.height(8.dp))
-                }
-
-                // Pomodoro phase indicator
-                if (timerState.mode == TimerMode.POMODORO) {
-                    PomodoroIndicator(timerState, fontScale, accent)
-                    Spacer(modifier = GlanceModifier.height(8.dp))
-                }
-            }
-
+            // Time display
+            Spacer(modifier = GlanceModifier.defaultWeight())
+            TimeDisplay(remainingMillis, timerState.status, fontScale, accent)
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            // Controls
-            ControlRow(timerState, fontScale)
-        }
-    }
-}
+            // Progress bar (always present to avoid layout shift)
+            ProgressBar(remainingMillis, timerState.durationMillis, timerState.status, accent)
+            Spacer(modifier = GlanceModifier.height(8.dp))
 
-@Composable
-private fun ModeLabel(mode: TimerMode, fontScale: Float) {
-    val context = LocalContext.current
-    val label = when (mode) {
-        TimerMode.COUNTDOWN -> "COUNTDOWN"
-        TimerMode.STOPWATCH -> "STOPWATCH"
-        TimerMode.POMODORO -> "POMODORO"
-    }
-    Row(
-        modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp)
-            .clickable(actionRunCallback<ModeSwitchActionCallback>()),
-    ) {
-        Image(
-            provider = ImageProvider(
-                GlanceText.renderDotoText(context, label, 11f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
-            ),
-            contentDescription = label,
-        )
-    }
-}
+            // Control buttons
+            ControlButtons(timerState.status, fontScale, accent)
 
-@Composable
-private fun TimeDisplay(timerState: TimerState, fontScale: Float, accent: AccentColorPreset) {
-    val context = LocalContext.current
-    val timeText = timerState.displayTime()
-    val color = timerTimeColor(timerState, accent)
-    Image(
-        provider = ImageProvider(
-            GlanceText.renderDotoText(context, timeText, 36f * fontScale, color)
-        ),
-        contentDescription = timeText,
-    )
-}
-
-@Composable
-private fun ProgressBar(timerState: TimerState, widgetWidth: androidx.compose.ui.unit.Dp, accent: AccentColorPreset) {
-    val context = LocalContext.current
-    val barWidth = (widgetWidth - 44.dp).value.coerceAtLeast(40f)
-    Image(
-        provider = ImageProvider(
-            GlanceText.renderProgressBar(
-                context = context,
-                widthDp = barWidth,
-                progress = timerState.progress(),
-                filledColor = accent.swatchColor.toArgb(),
-            )
-        ),
-        contentDescription = "Progress",
-    )
-}
-
-@Composable
-private fun PresetRow(fontScale: Float) {
-    val context = LocalContext.current
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        listOf("1M" to 1L, "5M" to 5L, "15M" to 15L, "25M" to 25L).forEachIndexed { index, (label, minutes) ->
-            if (index > 0) Spacer(modifier = GlanceModifier.width(8.dp))
-            Box(
-                modifier = GlanceModifier
-                    .cornerRadius(6.dp)
-                    .background(VantaDotWidgetTheme.GreyMedium)
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-                    .clickable(actionRunCallback<PresetActionCallback>(
-                        actionParametersOf(PresetActionCallback.DurationKey to minutes * 60 * 1000L)
-                    )),
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    provider = ImageProvider(
-                        GlanceText.renderDotoText(context, label, 11f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
-                    ),
-                    contentDescription = label,
-                )
+            // Preset buttons (only in FULL size)
+            if (isFull) {
+                Spacer(modifier = GlanceModifier.height(8.dp))
+                PresetButtons(fontScale)
             }
         }
     }
 }
 
 @Composable
-private fun PomodoroIndicator(timerState: TimerState, fontScale: Float, accent: AccentColorPreset) {
+private fun TimeDisplay(remainingMillis: Long, status: TimerStatus, fontScale: Float, accent: AccentColorPreset) {
     val context = LocalContext.current
-    val phaseLabel = when (timerState.pomodoroPhase) {
-        dk.codella.vantadot.timer.data.PomodoroPhase.WORK -> "WORK"
-        dk.codella.vantadot.timer.data.PomodoroPhase.BREAK -> "BREAK"
+    val totalSeconds = ((remainingMillis + 999) / 1000).toInt()
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    val timeText = "%02d:%02d".format(minutes, seconds)
+
+    val color = when (status) {
+        TimerStatus.RUNNING -> accent.swatchColor.toArgb()
+        TimerStatus.PAUSED -> VantaDotWidgetTheme.GreyLightArgb
+        TimerStatus.IDLE -> android.graphics.Color.WHITE
     }
-    val text = "$phaseLabel ${timerState.pomodoroCurrentCycle}/${timerState.pomodoroTotalCycles}"
-    val color = when (timerState.pomodoroPhase) {
-        dk.codella.vantadot.timer.data.PomodoroPhase.WORK -> accent.swatchColor.toArgb()
-        dk.codella.vantadot.timer.data.PomodoroPhase.BREAK -> VantaDotWidgetTheme.PomodoroBreakArgb
-    }
+
     Image(
         provider = ImageProvider(
-            GlanceText.renderDotoText(context, text, 11f * fontScale, color)
+            GlanceText.renderDotoText(
+                context = context,
+                text = timeText,
+                textSizeSp = 40f * fontScale,
+                color = color,
+            )
         ),
-        contentDescription = text,
+        contentDescription = "$minutes minutes $seconds seconds remaining",
     )
 }
 
 @Composable
-private fun ControlRow(timerState: TimerState, fontScale: Float) {
+private fun ProgressBar(remainingMillis: Long, durationMillis: Long, status: TimerStatus, accent: AccentColorPreset) {
+    val barBg = if (status == TimerStatus.IDLE) VantaDotWidgetTheme.GreyDark else VantaDotWidgetTheme.GreyMedium
+    val showFill = status != TimerStatus.IDLE && durationMillis > 0
+    val fraction = if (showFill) (remainingMillis.toFloat() / durationMillis).coerceIn(0f, 1f) else 0f
+    val availableWidth = LocalSize.current.width - VantaDotWidgetTheme.Padding * 2
+    val filledWidth = (availableWidth.value * fraction).coerceAtLeast(0f)
+
+    Box(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .height(3.dp)
+            .background(barBg),
+    ) {
+        if (filledWidth > 0f) {
+            Box(
+                modifier = GlanceModifier
+                    .width(filledWidth.dp)
+                    .height(3.dp)
+                    .background(accent.swatchColor),
+            ) {}
+        }
+    }
+}
+
+@Composable
+private fun ControlButtons(status: TimerStatus, fontScale: Float, accent: AccentColorPreset) {
     val context = LocalContext.current
-    val startPauseLabel = when {
-        timerState.isCompleted -> "RESTART"
-        timerState.isRunning -> "PAUSE"
+    val startPauseLabel = when (status) {
+        TimerStatus.RUNNING -> "PAUSE"
         else -> "START"
+    }
+
+    val startPauseBg = when (status) {
+        TimerStatus.IDLE -> accent.inProgressBg
+        else -> VantaDotWidgetTheme.GreyMedium
+    }
+    val startPauseTextColor = when (status) {
+        TimerStatus.IDLE -> accent.swatchColor.toArgb()
+        else -> android.graphics.Color.WHITE
     }
 
     Row(
@@ -211,27 +151,27 @@ private fun ControlRow(timerState: TimerState, fontScale: Float) {
         Box(
             modifier = GlanceModifier
                 .cornerRadius(8.dp)
-                .background(VantaDotWidgetTheme.GreyMedium)
-                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .background(startPauseBg)
+                .padding(horizontal = 12.dp, vertical = 6.dp)
                 .clickable(actionRunCallback<StartPauseActionCallback>()),
             contentAlignment = Alignment.Center,
         ) {
             Image(
                 provider = ImageProvider(
-                    GlanceText.renderDotoText(context, startPauseLabel, 12f * fontScale, android.graphics.Color.WHITE)
+                    GlanceText.renderDotoText(context, startPauseLabel, 12f * fontScale, startPauseTextColor)
                 ),
                 contentDescription = startPauseLabel,
             )
         }
 
-        Spacer(modifier = GlanceModifier.width(12.dp))
+        Spacer(modifier = GlanceModifier.width(8.dp))
 
         // Reset button
         Box(
             modifier = GlanceModifier
                 .cornerRadius(8.dp)
                 .background(VantaDotWidgetTheme.GreyMedium)
-                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .padding(horizontal = 12.dp, vertical = 6.dp)
                 .clickable(actionRunCallback<ResetActionCallback>()),
             contentAlignment = Alignment.Center,
         ) {
@@ -245,16 +185,36 @@ private fun ControlRow(timerState: TimerState, fontScale: Float) {
     }
 }
 
-private fun timerTimeColor(timerState: TimerState, accent: AccentColorPreset): Int {
-    if (timerState.mode == TimerMode.STOPWATCH) return android.graphics.Color.WHITE
-    if (timerState.isCompleted) return VantaDotWidgetTheme.TimerCompleteArgb
-    if (!timerState.isRunning) return android.graphics.Color.WHITE
+@Composable
+private fun PresetButtons(fontScale: Float) {
+    val context = LocalContext.current
+    val presets = listOf("1M" to 1L, "5M" to 5L, "15M" to 15L, "30M" to 30L)
 
-    val remainingSeconds = timerState.remainingMs / 1000
-    return when {
-        remainingSeconds > 60 -> android.graphics.Color.WHITE
-        remainingSeconds > 30 -> VantaDotWidgetTheme.TimerWarningArgb
-        remainingSeconds > 10 -> VantaDotWidgetTheme.TimerUrgentArgb
-        else -> VantaDotWidgetTheme.TimerCriticalArgb
+    Row(
+        modifier = GlanceModifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        presets.forEachIndexed { index, (label, minutes) ->
+            if (index > 0) Spacer(modifier = GlanceModifier.width(6.dp))
+            Box(
+                modifier = GlanceModifier
+                    .cornerRadius(8.dp)
+                    .background(VantaDotWidgetTheme.GreyMedium)
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                    .clickable(
+                        actionRunCallback<PresetActionCallback>(
+                            actionParametersOf(DurationParam to minutes * 60 * 1000L)
+                        )
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Image(
+                    provider = ImageProvider(
+                        GlanceText.renderDotoText(context, label, 11f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
+                    ),
+                    contentDescription = "$label preset",
+                )
+            }
+        }
     }
 }
