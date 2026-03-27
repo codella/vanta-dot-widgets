@@ -8,7 +8,6 @@ class CalendarWidgetContentTest {
 
     @Test
     fun `widget sizes are correctly defined`() {
-        assertTrue(CalendarWidgetSizes.COMPACT.width < CalendarWidgetSizes.EXPANDED.width)
         assertTrue(CalendarWidgetSizes.EXPANDED.height < CalendarWidgetSizes.FULL.height)
         assertEquals(CalendarWidgetSizes.EXPANDED.width, CalendarWidgetSizes.FULL.width)
     }

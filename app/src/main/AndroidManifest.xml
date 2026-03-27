@@ -30,6 +30,11 @@
             android:exported="true"
             android:theme="@style/Theme.VantaDot" />
 
+        <activity
+            android:name=".timer.widget.TimerSettingsActivity"
+            android:exported="true"
+            android:theme="@style/Theme.VantaDot" />
+
         <receiver
             android:name=".calendar.widget.CalendarWidgetReceiver"
             android:exported="true">

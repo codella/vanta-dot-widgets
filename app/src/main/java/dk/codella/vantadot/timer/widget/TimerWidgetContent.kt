@@ -35,6 +35,7 @@ fun TimerWidgetContent(
     timerState: TimerWidgetState,
     fontSizePreset: Int = 1,
     accentColorIndex: Int = 0,
+    presetMinutes: List<Int> = listOf(1, 5, 15, 30),
 ) {
     val size = LocalSize.current
     val isFull = size.height >= TimerWidgetSizes.FULL.height
@@ -65,11 +66,9 @@ fun TimerWidgetContent(
             // Control buttons
             ControlButtons(timerState.status, fontScale, accent)
 
-            // Preset buttons (only in FULL size)
-            if (isFull) {
-                Spacer(modifier = GlanceModifier.height(8.dp))
-                PresetButtons(fontScale)
-            }
+            // Preset buttons
+            Spacer(modifier = GlanceModifier.height(8.dp))
+            PresetButtons(fontScale, presetMinutes)
         }
     }
 }
@@ -186,9 +185,9 @@ private fun ControlButtons(status: TimerStatus, fontScale: Float, accent: Accent
 }
 
 @Composable
-private fun PresetButtons(fontScale: Float) {
+private fun PresetButtons(fontScale: Float, presetMinutes: List<Int>) {
     val context = LocalContext.current
-    val presets = listOf("1M" to 1L, "5M" to 5L, "15M" to 15L, "30M" to 30L)
+    val presets = presetMinutes.map { "${it}M" to it.toLong() }
 
     Row(
         modifier = GlanceModifier.fillMaxWidth(),

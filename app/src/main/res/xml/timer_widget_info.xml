@@ -12,4 +12,6 @@
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="0"
     android:description="@string/timer_widget_description"
-    android:widgetCategory="home_screen" />
+    android:widgetCategory="home_screen"
+    android:configure="dk.codella.vantadot.timer.widget.TimerSettingsActivity"
+    android:widgetFeatures="reconfigurable" />

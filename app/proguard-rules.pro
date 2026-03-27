@@ -14,6 +14,9 @@
 # Glance ActionCallback must not be obfuscated
 -keep class dk.codella.vantadot.calendar.widget.RefreshActionCallback { *; }
 
+# Timer widget configuration activity
+-keep class dk.codella.vantadot.timer.widget.TimerSettingsActivity { *; }
+
 # Timer widget receiver and callbacks
 -keep class dk.codella.vantadot.timer.widget.TimerWidgetReceiver { *; }
 -keep class dk.codella.vantadot.timer.widget.StartPauseActionCallback { *; }

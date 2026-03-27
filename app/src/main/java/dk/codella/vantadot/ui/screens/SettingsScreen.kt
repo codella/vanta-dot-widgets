@@ -281,7 +281,7 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SectionLabel(text: String) {
+internal fun SectionLabel(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
@@ -291,7 +291,7 @@ private fun SectionLabel(text: String) {
 }
 
 @Composable
-private fun SettingToggle(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+internal fun SettingToggle(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -356,7 +356,7 @@ private fun MaxEventsSlider(value: Float, onValueChange: (Float) -> Unit) {
 }
 
 @Composable
-private fun AccentColorRow(selectedIndex: Int, onSelect: (Int) -> Unit) {
+internal fun AccentColorRow(selectedIndex: Int, onSelect: (Int) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -382,7 +382,7 @@ private fun AccentColorRow(selectedIndex: Int, onSelect: (Int) -> Unit) {
 }
 
 @Composable
-private fun SegmentedSelector(options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
+internal fun SegmentedSelector(options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
