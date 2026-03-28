@@ -8,11 +8,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.appwidget.updateAll
-import androidx.glance.state.PreferencesGlanceStateDefinition
-import dk.codella.vantadot.settings.WidgetSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,7 +29,9 @@ class BinaryClockWidgetReceiver : GlanceAppWidgetReceiver() {
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         ClockMinuteTickReceiver.register(context)
-        BinaryClockSecondTickHandler.checkAndStart(context)
+        // onUpdate is called after configure activity finishes,
+        // so GlanceIds are now registered — safe to start ticking
+        BinaryClockSecondTickHandler.startIfNotRunning(context)
     }
 
     override fun onDisabled(context: Context) {
@@ -69,7 +68,8 @@ private object ClockMinuteTickReceiver : android.content.BroadcastReceiver() {
             try {
                 writeTimeToAllWidgets(context)
                 BinaryClockWidget().updateAll(context)
-                BinaryClockSecondTickHandler.checkAndStart(context)
+                // Restart second tick if process was killed and coroutine died
+                BinaryClockSecondTickHandler.startIfNotRunning(context)
             } finally {
                 result.finish()
             }
@@ -85,52 +85,27 @@ object BinaryClockSecondTickHandler {
     val SecondKey = intPreferencesKey("binary_clock_second")
 
     fun start(context: Context) {
-        if (job?.isActive == true) return
         val ctx = context.applicationContext
         job?.cancel()
         job = CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             while (isActive) {
                 delay(1000)
                 try {
-                    val manager = GlanceAppWidgetManager(ctx)
-                    var anyShowSeconds = false
-                    for (id in manager.getGlanceIds(BinaryClockWidget::class.java)) {
-                        updateAppWidgetState(ctx, id) { prefs ->
-                            val cal = Calendar.getInstance()
-                            prefs[HourKey] = cal.get(Calendar.HOUR_OF_DAY)
-                            prefs[MinuteKey] = cal.get(Calendar.MINUTE)
-                            prefs[SecondKey] = cal.get(Calendar.SECOND)
-                            val settings = WidgetSettings.fromPreferences(prefs)
-                            if (settings.binaryClockShowSeconds) anyShowSeconds = true
-                        }
-                    }
+                    writeTimeToAllWidgets(ctx)
                     BinaryClockWidget().updateAll(ctx)
-                    if (!anyShowSeconds) break
                 } catch (_: Exception) {}
             }
         }
     }
 
+    fun startIfNotRunning(context: Context) {
+        if (job?.isActive == true) return
+        start(context)
+    }
+
     fun stop() {
         job?.cancel()
         job = null
-    }
-
-    fun checkAndStart(context: Context) {
-        val ctx = context.applicationContext
-        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
-            try {
-                val manager = GlanceAppWidgetManager(ctx)
-                for (id in manager.getGlanceIds(BinaryClockWidget::class.java)) {
-                    val prefs = getAppWidgetState(ctx, PreferencesGlanceStateDefinition, id)
-                    val settings = WidgetSettings.fromPreferences(prefs)
-                    if (settings.binaryClockShowSeconds) {
-                        start(ctx)
-                        return@launch
-                    }
-                }
-            } catch (_: Exception) {}
-        }
     }
 }
 
