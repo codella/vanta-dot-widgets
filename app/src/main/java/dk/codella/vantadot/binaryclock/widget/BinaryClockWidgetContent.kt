@@ -62,7 +62,8 @@ fun BinaryClockWidgetContent() {
         numCols + numGroups * 0.5f + (numGroups - 1) * 1.0f
     val heightFactor = (if (settings.binaryClockShowColumnLabels) 1.3f else 0f) +
         4f + 3f * 0.5f
-    val dotSizeDp = min(availableWidth / widthFactor, availableHeight / heightFactor) * fontScale
+    val dotSizeDp = (min(availableWidth / widthFactor, availableHeight / heightFactor) * fontScale)
+        .coerceAtLeast(4f)
 
     Box(
         modifier = GlanceModifier
