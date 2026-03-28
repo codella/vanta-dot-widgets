@@ -52,7 +52,7 @@ class CalendarRepository(private val context: Context) {
             if (!hasCalendarPermission()) return@withContext emptyList()
 
             val now = System.currentTimeMillis()
-            val end = endOfDayPlusDays(7)
+            val end = endOfDayPlusDays(0)
 
             val builder = CalendarContract.Instances.CONTENT_URI.buildUpon()
             ContentUris.appendId(builder, now)
