@@ -366,13 +366,14 @@ internal fun AccentColorRow(selectedIndex: Int, onSelect: (Int) -> Unit) {
     ) {
         AccentColorPreset.entries.forEachIndexed { index, preset ->
             val isSelected = index == selectedIndex
+            val borderColor = if (preset == AccentColorPreset.WHITE) androidx.compose.ui.graphics.Color(0xFF666666) else VantaDotWhite
             Box(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
                     .background(preset.swatchColor, CircleShape)
                     .then(
-                        if (isSelected) Modifier.border(2.dp, VantaDotWhite, CircleShape)
+                        if (isSelected) Modifier.border(2.dp, borderColor, CircleShape)
                         else Modifier
                     )
                     .clickable { onSelect(index) },
