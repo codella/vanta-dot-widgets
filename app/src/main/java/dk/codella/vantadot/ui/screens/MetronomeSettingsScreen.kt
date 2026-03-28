@@ -102,7 +102,7 @@ fun MetronomeSettingsScreen(
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "METRONOME SETTINGS",
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
         }

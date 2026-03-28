@@ -81,7 +81,7 @@ fun BinaryClockSettingsScreen(
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "BINARY CLOCK SETTINGS",
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
         }
