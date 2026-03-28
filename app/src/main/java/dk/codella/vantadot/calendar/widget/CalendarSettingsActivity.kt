@@ -50,12 +50,12 @@ class CalendarSettingsActivity : ComponentActivity() {
 
         hasCalendarPermission = CalendarRepository(this).hasCalendarPermission()
 
-        // Load current settings from Glance state
+        // Load current settings from this widget's Glance state
         updateScope.launch {
-            val manager = GlanceAppWidgetManager(applicationContext)
-            val ids = manager.getGlanceIds(CalendarWidget::class.java)
-            if (ids.isNotEmpty()) {
-                val prefs = getAppWidgetState(applicationContext, PreferencesGlanceStateDefinition, ids.first())
+            if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
+                val manager = GlanceAppWidgetManager(applicationContext)
+                val glanceId = manager.getGlanceIdBy(appWidgetId)
+                val prefs = getAppWidgetState(applicationContext, PreferencesGlanceStateDefinition, glanceId)
                 initialSettings = WidgetSettings.fromPreferences(prefs)
             }
             settingsLoaded = true
@@ -81,20 +81,19 @@ class CalendarSettingsActivity : ComponentActivity() {
     }
 
     private fun saveSettings(settings: WidgetSettings) {
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
         saveJob?.cancel()
         val context = applicationContext
         saveJob = updateScope.launch {
             delay(80) // debounce rapid changes (e.g. slider dragging)
             val manager = GlanceAppWidgetManager(context)
-            val ids = manager.getGlanceIds(CalendarWidget::class.java)
-            ids.forEach { id ->
-                updateAppWidgetState(context, id) { prefs ->
-                    WidgetSettings.writeTo(prefs, settings)
-                }
-                CalendarWidget.refreshEventsIntoState(context, id,
-                    useStubOverride = BuildConfig.DEBUG && settings.useStubData)
-                CalendarWidget().update(context, id)
+            val glanceId = manager.getGlanceIdBy(appWidgetId)
+            updateAppWidgetState(context, glanceId) { prefs ->
+                WidgetSettings.writeTo(prefs, settings)
             }
+            CalendarWidget.refreshEventsIntoState(context, glanceId,
+                useStubOverride = BuildConfig.DEBUG && settings.useStubData)
+            CalendarWidget().update(context, glanceId)
         }
     }
 }
