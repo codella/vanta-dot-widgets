@@ -39,6 +39,22 @@ A countdown timer, stopwatch, and pomodoro timer in a resizable widget:
 - **Notification controls** — persistent notification with pause/resume and reset while timer is running
 - **Completion alerts** — sound and vibration when timer finishes
 
+## Binary Clock Widget
+
+A BCD (Binary-Coded Decimal) clock displaying the current time as a dot grid:
+
+- **3×2** — 4 rows (bit values 8, 4, 2, 1) × 4–6 columns (hours and minutes digits, optionally seconds)
+
+### Features
+
+- **BCD encoding** — each decimal digit of the time is represented as a column of binary dots
+- **Dot styles** — choose between filled circles or squares for the on/off indicators
+- **Optional labels** — bit value labels (8, 4, 2, 1) on the left and column group labels (H, M, S) on top
+- **Digital readout** — optional digital time display below the binary grid
+- **12/24-hour format** — configurable time format
+- **Show seconds** — optional seconds columns with 1-second refresh rate
+- **Per-widget settings** — each instance has independent accent color, font size, dot shape, and display toggles
+
 ## Requirements
 
 - Android 13+ (API 33)
@@ -65,7 +81,7 @@ If you're not using mise, set `JAVA_HOME` to any JDK 17 installation before runn
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-After installing, long-press on your home screen, tap "Widgets", and find **Vanta Dot > Calendar** or **Vanta Dot > Timer**. The companion app lets you preview widgets, pin them, and grant permissions.
+After installing, long-press on your home screen, tap "Widgets", and find **Vanta Dot** widgets (Calendar, Timer, Metronome, Binary Clock). The companion app lets you preview widgets, pin them, and grant permissions.
 
 ## Project Structure
 
@@ -103,13 +119,33 @@ app/src/main/java/dk/codella/vantadot/
 │       ├── TimerWidgetSizes.kt         Size breakpoint constants
 │       ├── TimerSettings.kt            Settings data class
 │       └── callbacks/                  Start/pause, reset, preset, mode switch
+├── metronome/
+│   ├── data/
+│   │   └── MetronomeState.kt          Metronome state + sound choice enum
+│   ├── widget/
+│   │   ├── MetronomeWidget.kt         Glance widget (SizeMode.Exact)
+│   │   ├── MetronomeWidgetReceiver.kt BroadcastReceiver
+│   │   ├── MetronomeWidgetContent.kt  Idle/playing layouts with beat dots
+│   │   ├── MetronomeSettingsActivity.kt Widget configuration activity
+│   │   └── MetronomeActionCallbacks.kt Play/stop, BPM adjust, preset cycle
+│   └── service/
+│       └── MetronomeService.kt        Foreground service with SoundPool beat loop
+├── binaryclock/
+│   ├── data/
+│   │   └── BinaryClockDotShape.kt     Dot shape enum (Circle, Square)
+│   └── widget/
+│       ├── BinaryClockWidget.kt           Glance widget (SizeMode.Exact)
+│       ├── BinaryClockWidgetReceiver.kt   BroadcastReceiver + minute/second tick
+│       ├── BinaryClockWidgetContent.kt    BCD grid + digital time composable
+│       ├── BinaryClockWidgetSizes.kt      Size constants
+│       └── BinaryClockSettingsActivity.kt Widget configuration activity
 ├── settings/
 │   ├── AccentColorPreset.kt     Accent color options
 │   ├── FontSizePreset.kt        Font size options
 │   └── WidgetSettings.kt        Settings data class + Glance state persistence
 ├── common/
 │   ├── VantaDotWidgetTheme.kt    Widget colors, urgency palette, dimensions
-│   └── GlanceText.kt            Doto font bitmap rendering + circle indicators
+│   └── GlanceText.kt            Doto font bitmap rendering + circle/clock indicators
 └── ui/
     ├── screens/
     │   ├── SettingsScreen.kt         Widget settings UI

@@ -36,6 +36,14 @@ data class WidgetSettings(
     val metronomeAccentFirstBeat: Boolean = true,
     val metronomeVibration: Boolean = false,
     val metronomeSoundChoice: Int = 0,
+    // Binary clock settings
+    val binaryClockShowSeconds: Boolean = true,
+    val binaryClockUse24Hour: Boolean = false,
+    val binaryClockShowDigitalTime: Boolean = false,
+    val binaryClockShowBitLabels: Boolean = false,
+    val binaryClockShowColumnLabels: Boolean = false,
+    val binaryClockDotShape: Int = 1,
+    val binaryClockAccentColorIndex: Int = 6,
 ) {
     companion object {
         const val DEFAULT_MAX_EVENTS = 20
@@ -71,6 +79,13 @@ data class WidgetSettings(
         val MetronomeAccentFirstBeatKey = booleanPreferencesKey("metronome_accent_first_beat")
         val MetronomeVibrationKey = booleanPreferencesKey("metronome_vibration")
         val MetronomeSoundChoiceKey = intPreferencesKey("metronome_sound_choice")
+        val BinaryClockShowSecondsKey = booleanPreferencesKey("binary_clock_show_seconds")
+        val BinaryClockUse24HourKey = booleanPreferencesKey("binary_clock_use_24_hour")
+        val BinaryClockShowDigitalTimeKey = booleanPreferencesKey("binary_clock_show_digital_time")
+        val BinaryClockShowBitLabelsKey = booleanPreferencesKey("binary_clock_show_bit_labels")
+        val BinaryClockShowColumnLabelsKey = booleanPreferencesKey("binary_clock_show_column_labels")
+        val BinaryClockDotShapeKey = intPreferencesKey("binary_clock_dot_shape")
+        val BinaryClockAccentColorIndexKey = intPreferencesKey("binary_clock_accent_color_index")
 
         private fun parsePresets(json: String): List<TimerPreset> {
             return try {
@@ -142,6 +157,13 @@ data class WidgetSettings(
             metronomeAccentFirstBeat = prefs[MetronomeAccentFirstBeatKey] ?: true,
             metronomeVibration = prefs[MetronomeVibrationKey] ?: false,
             metronomeSoundChoice = prefs[MetronomeSoundChoiceKey] ?: 0,
+            binaryClockShowSeconds = prefs[BinaryClockShowSecondsKey] ?: true,
+            binaryClockUse24Hour = prefs[BinaryClockUse24HourKey] ?: false,
+            binaryClockShowDigitalTime = prefs[BinaryClockShowDigitalTimeKey] ?: false,
+            binaryClockShowBitLabels = prefs[BinaryClockShowBitLabelsKey] ?: false,
+            binaryClockShowColumnLabels = prefs[BinaryClockShowColumnLabelsKey] ?: false,
+            binaryClockDotShape = prefs[BinaryClockDotShapeKey] ?: 1,
+            binaryClockAccentColorIndex = prefs[BinaryClockAccentColorIndexKey] ?: 6,
         )
 
         fun writeTo(prefs: MutablePreferences, settings: WidgetSettings) {
@@ -165,6 +187,13 @@ data class WidgetSettings(
             prefs[MetronomeAccentFirstBeatKey] = settings.metronomeAccentFirstBeat
             prefs[MetronomeVibrationKey] = settings.metronomeVibration
             prefs[MetronomeSoundChoiceKey] = settings.metronomeSoundChoice
+            prefs[BinaryClockShowSecondsKey] = settings.binaryClockShowSeconds
+            prefs[BinaryClockUse24HourKey] = settings.binaryClockUse24Hour
+            prefs[BinaryClockShowDigitalTimeKey] = settings.binaryClockShowDigitalTime
+            prefs[BinaryClockShowBitLabelsKey] = settings.binaryClockShowBitLabels
+            prefs[BinaryClockShowColumnLabelsKey] = settings.binaryClockShowColumnLabels
+            prefs[BinaryClockDotShapeKey] = settings.binaryClockDotShape
+            prefs[BinaryClockAccentColorIndexKey] = settings.binaryClockAccentColorIndex
         }
     }
 }

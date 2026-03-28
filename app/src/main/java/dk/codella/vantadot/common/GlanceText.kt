@@ -177,6 +177,170 @@ object GlanceText {
         return bitmap
     }
 
+    fun renderBinaryClockFace(
+        context: Context,
+        hours: Int,
+        minutes: Int,
+        seconds: Int,
+        showSeconds: Boolean,
+        showBitLabels: Boolean,
+        showColumnLabels: Boolean,
+        dotShape: Int,
+        onColor: Int,
+        offColor: Int,
+        labelColor: Int,
+        dotSizeDp: Float = 10f,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val scaledDensity = context.resources.displayMetrics.scaledDensity
+
+        val dotSizePx = dotSizeDp * density
+        val dotSpacingPx = dotSizePx * 0.5f
+        val groupSpacingPx = dotSizePx * 1.0f
+        val rowSpacingPx = dotSizePx * 0.5f
+
+        val labelSizePx = dotSizeDp * 0.8f * scaledDensity
+        val typeface = ResourcesCompat.getFont(context, R.font.doto) ?: Typeface.MONOSPACE
+        val labelPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            this.textSize = labelSizePx
+            this.color = labelColor
+        }
+
+        val digits = mutableListOf(hours / 10, hours % 10, minutes / 10, minutes % 10)
+        if (showSeconds) {
+            digits.add(seconds / 10)
+            digits.add(seconds % 10)
+        }
+        val numCols = digits.size
+        val numGroups = numCols / 2
+
+        val bitLabelWidth = if (showBitLabels) {
+            labelPaint.measureText("8") + dotSpacingPx
+        } else 0f
+
+        val colLabelHeight = if (showColumnLabels) {
+            val fm = labelPaint.fontMetrics
+            (fm.bottom - fm.top) + rowSpacingPx * 0.5f
+        } else 0f
+
+        // Precompute column X positions
+        val colX = FloatArray(numCols)
+        var x = bitLabelWidth
+        for (col in 0 until numCols) {
+            if (col > 0) {
+                x += if (col % 2 == 0) groupSpacingPx else dotSpacingPx
+            }
+            colX[col] = x
+            x += dotSizePx
+        }
+        val totalWidth = ceil(x.toDouble()).toInt().coerceAtLeast(1)
+
+        // Precompute row Y positions
+        val rowY = FloatArray(4)
+        for (row in 0 until 4) {
+            rowY[row] = colLabelHeight + row * (dotSizePx + rowSpacingPx)
+        }
+        val totalHeight = ceil((rowY[3] + dotSizePx).toDouble()).toInt().coerceAtLeast(1)
+
+        val bitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val bitValues = intArrayOf(8, 4, 2, 1)
+
+        // Column labels (H H M M S S)
+        if (showColumnLabels) {
+            val labels = if (showSeconds) listOf("H", "H", "M", "M", "S", "S")
+                         else listOf("H", "H", "M", "M")
+            for (col in 0 until numCols) {
+                val lbl = labels[col]
+                val lblWidth = labelPaint.measureText(lbl)
+                canvas.drawText(
+                    lbl,
+                    colX[col] + (dotSizePx - lblWidth) / 2,
+                    -labelPaint.fontMetrics.top,
+                    labelPaint,
+                )
+            }
+        }
+
+        // Bit labels (8 4 2 1)
+        if (showBitLabels) {
+            for (row in 0 until 4) {
+                val lbl = bitValues[row].toString()
+                val lblWidth = labelPaint.measureText(lbl)
+                val labelX = (bitLabelWidth - dotSpacingPx - lblWidth) / 2
+                val labelY = rowY[row] + dotSizePx / 2 -
+                    (labelPaint.fontMetrics.top + labelPaint.fontMetrics.bottom) / 2
+                canvas.drawText(lbl, labelX, labelY, labelPaint)
+            }
+        }
+
+        // Dots
+        val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        val strokeWidth = 1.5f * density
+
+        for (row in 0 until 4) {
+            val bitValue = bitValues[row]
+            for (col in 0 until numCols) {
+                val isOn = (digits[col] and bitValue) != 0
+                val cx = colX[col] + dotSizePx / 2
+                val cy = rowY[row] + dotSizePx / 2
+
+                dotPaint.color = if (isOn) onColor else offColor
+
+                when (dotShape) {
+                    0 -> { // Circle
+                        if (isOn) {
+                            dotPaint.style = Paint.Style.FILL
+                            canvas.drawCircle(cx, cy, dotSizePx / 2, dotPaint)
+                        } else {
+                            dotPaint.style = Paint.Style.STROKE
+                            dotPaint.strokeWidth = strokeWidth
+                            canvas.drawCircle(cx, cy, (dotSizePx - strokeWidth) / 2, dotPaint)
+                        }
+                    }
+                    1 -> { // Square
+                        if (isOn) {
+                            dotPaint.style = Paint.Style.FILL
+                            canvas.drawRect(
+                                colX[col], rowY[row],
+                                colX[col] + dotSizePx, rowY[row] + dotSizePx,
+                                dotPaint,
+                            )
+                        } else {
+                            dotPaint.style = Paint.Style.STROKE
+                            dotPaint.strokeWidth = strokeWidth
+                            val half = strokeWidth / 2
+                            canvas.drawRect(
+                                colX[col] + half, rowY[row] + half,
+                                colX[col] + dotSizePx - half, rowY[row] + dotSizePx - half,
+                                dotPaint,
+                            )
+                        }
+                    }
+                    else -> { // Diamond
+                        val path = android.graphics.Path().apply {
+                            moveTo(cx, rowY[row])
+                            lineTo(colX[col] + dotSizePx, cy)
+                            lineTo(cx, rowY[row] + dotSizePx)
+                            lineTo(colX[col], cy)
+                            close()
+                        }
+                        if (isOn) {
+                            dotPaint.style = Paint.Style.FILL
+                        } else {
+                            dotPaint.style = Paint.Style.STROKE
+                            dotPaint.strokeWidth = strokeWidth
+                        }
+                        canvas.drawPath(path, dotPaint)
+                    }
+                }
+            }
+        }
+
+        return bitmap
+    }
+
     fun renderDotoText(
         context: Context,
         text: String,

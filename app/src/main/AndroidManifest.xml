@@ -85,6 +85,22 @@
             android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
 
+        <activity
+            android:name=".binaryclock.widget.BinaryClockSettingsActivity"
+            android:exported="true"
+            android:theme="@style/Theme.VantaDot" />
+
+        <receiver
+            android:name=".binaryclock.widget.BinaryClockWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/binary_clock_widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>

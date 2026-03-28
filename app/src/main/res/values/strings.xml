@@ -13,4 +13,6 @@
     <string name="timer_widget_description">Countdown timer with preset durations</string>
     <string name="metronome_widget_name">Metronome</string>
     <string name="metronome_widget_description">Practice metronome with BPM presets</string>
+    <string name="binary_clock_widget_name">Binary Clock</string>
+    <string name="binary_clock_widget_description">BCD binary clock with dot grid display</string>
 </resources>

@@ -34,5 +34,9 @@
 -keep class dk.codella.vantadot.metronome.widget.CycleMetronomePresetActionCallback { *; }
 -keep class dk.codella.vantadot.metronome.service.MetronomeService { *; }
 
+# Binary clock widget
+-keep class dk.codella.vantadot.binaryclock.widget.BinaryClockWidgetReceiver { *; }
+-keep class dk.codella.vantadot.binaryclock.widget.BinaryClockSettingsActivity { *; }
+
 # Keep Glance internals
 -keep class androidx.glance.** { *; }

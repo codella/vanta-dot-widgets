@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dk.codella.vantadot.calendar.widget.CalendarWidgetReceiver
+import dk.codella.vantadot.binaryclock.widget.BinaryClockWidgetReceiver
 import dk.codella.vantadot.metronome.widget.MetronomeWidgetReceiver
 import dk.codella.vantadot.timer.widget.TimerWidgetReceiver
 import dk.codella.vantadot.ui.theme.VantaDotBlack
@@ -69,6 +70,15 @@ fun WidgetCatalogScreen(
                     hasPermission = hasNotificationPermission,
                     onRequestPermission = onRequestNotificationPermission,
                     receiverClass = MetronomeWidgetReceiver::class.java,
+                )
+            }
+            item {
+                WidgetPreviewCard(
+                    widgetName = "BINARY CLOCK",
+                    widgetDescription = "BCD binary clock with dot grid display",
+                    hasPermission = true,
+                    onRequestPermission = {},
+                    receiverClass = BinaryClockWidgetReceiver::class.java,
                 )
             }
         }
