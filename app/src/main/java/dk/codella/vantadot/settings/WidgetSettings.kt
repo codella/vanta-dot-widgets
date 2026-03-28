@@ -11,6 +11,8 @@ import org.json.JSONObject
 
 data class TimerPreset(val name: String, val seconds: Int)
 
+data class MetronomePreset(val name: String, val bpm: Int)
+
 data class WidgetSettings(
     val showSectionHeader: Boolean = true,
     val showAllDayEvents: Boolean = true,
@@ -28,6 +30,12 @@ data class WidgetSettings(
     val timerPresets: List<TimerPreset> = DEFAULT_TIMER_PRESETS,
     val timerVibration: Boolean = true,
     val timerSound: Boolean = true,
+    // Metronome settings
+    val metronomePresets: List<MetronomePreset> = DEFAULT_METRONOME_PRESETS,
+    val metronomeBeatsPerBar: Int = 4,
+    val metronomeAccentFirstBeat: Boolean = true,
+    val metronomeVibration: Boolean = false,
+    val metronomeSoundChoice: Int = 0,
 ) {
     companion object {
         const val DEFAULT_MAX_EVENTS = 20
@@ -35,6 +43,12 @@ data class WidgetSettings(
         val DEFAULT_TIMER_PRESETS = listOf(
             TimerPreset("Timer 1", 60),
             TimerPreset("Timer 2", 300),
+        )
+
+        val DEFAULT_METRONOME_PRESETS = listOf(
+            MetronomePreset("Adagio", 72),
+            MetronomePreset("Moderato", 108),
+            MetronomePreset("Allegro", 132),
         )
 
         val ShowSectionHeaderKey = booleanPreferencesKey("show_section_header")
@@ -52,6 +66,11 @@ data class WidgetSettings(
         val TimerPresetsKey = stringPreferencesKey("timer_presets_json")
         val TimerVibrationKey = booleanPreferencesKey("timer_vibration")
         val TimerSoundKey = booleanPreferencesKey("timer_sound")
+        val MetronomePresetsKey = stringPreferencesKey("metronome_presets_json")
+        val MetronomeBeatsPerBarKey = intPreferencesKey("metronome_beats_per_bar")
+        val MetronomeAccentFirstBeatKey = booleanPreferencesKey("metronome_accent_first_beat")
+        val MetronomeVibrationKey = booleanPreferencesKey("metronome_vibration")
+        val MetronomeSoundChoiceKey = intPreferencesKey("metronome_sound_choice")
 
         private fun parsePresets(json: String): List<TimerPreset> {
             return try {
@@ -76,6 +95,29 @@ data class WidgetSettings(
             return arr.toString()
         }
 
+        private fun parseMetronomePresets(json: String): List<MetronomePreset> {
+            return try {
+                val arr = JSONArray(json)
+                (0 until arr.length()).map { i ->
+                    val obj = arr.getJSONObject(i)
+                    MetronomePreset(obj.getString("name"), obj.getInt("bpm"))
+                }
+            } catch (_: Exception) {
+                DEFAULT_METRONOME_PRESETS
+            }
+        }
+
+        private fun serializeMetronomePresets(presets: List<MetronomePreset>): String {
+            val arr = JSONArray()
+            presets.forEach { p ->
+                arr.put(JSONObject().apply {
+                    put("name", p.name)
+                    put("bpm", p.bpm)
+                })
+            }
+            return arr.toString()
+        }
+
         fun fromPreferences(prefs: Preferences) = WidgetSettings(
             showSectionHeader = prefs[ShowSectionHeaderKey] ?: true,
             showAllDayEvents = prefs[ShowAllDayEventsKey] ?: true,
@@ -95,6 +137,11 @@ data class WidgetSettings(
             timerPresets = prefs[TimerPresetsKey]?.let { parsePresets(it) } ?: DEFAULT_TIMER_PRESETS,
             timerVibration = prefs[TimerVibrationKey] ?: true,
             timerSound = prefs[TimerSoundKey] ?: true,
+            metronomePresets = prefs[MetronomePresetsKey]?.let { parseMetronomePresets(it) } ?: DEFAULT_METRONOME_PRESETS,
+            metronomeBeatsPerBar = prefs[MetronomeBeatsPerBarKey] ?: 4,
+            metronomeAccentFirstBeat = prefs[MetronomeAccentFirstBeatKey] ?: true,
+            metronomeVibration = prefs[MetronomeVibrationKey] ?: false,
+            metronomeSoundChoice = prefs[MetronomeSoundChoiceKey] ?: 0,
         )
 
         fun writeTo(prefs: MutablePreferences, settings: WidgetSettings) {
@@ -113,6 +160,11 @@ data class WidgetSettings(
             prefs[TimerPresetsKey] = serializePresets(settings.timerPresets)
             prefs[TimerVibrationKey] = settings.timerVibration
             prefs[TimerSoundKey] = settings.timerSound
+            prefs[MetronomePresetsKey] = serializeMetronomePresets(settings.metronomePresets)
+            prefs[MetronomeBeatsPerBarKey] = settings.metronomeBeatsPerBar
+            prefs[MetronomeAccentFirstBeatKey] = settings.metronomeAccentFirstBeat
+            prefs[MetronomeVibrationKey] = settings.metronomeVibration
+            prefs[MetronomeSoundChoiceKey] = settings.metronomeSoundChoice
         }
     }
 }

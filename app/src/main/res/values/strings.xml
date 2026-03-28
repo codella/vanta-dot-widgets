@@ -11,4 +11,6 @@
     <string name="all_day">All day</string>
     <string name="timer_widget_name">Timer</string>
     <string name="timer_widget_description">Countdown timer with preset durations</string>
+    <string name="metronome_widget_name">Metronome</string>
+    <string name="metronome_widget_description">Practice metronome with BPM presets</string>
 </resources>

@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dk.codella.vantadot.calendar.widget.CalendarWidgetReceiver
+import dk.codella.vantadot.metronome.widget.MetronomeWidgetReceiver
 import dk.codella.vantadot.timer.widget.TimerWidgetReceiver
 import dk.codella.vantadot.ui.theme.VantaDotBlack
 
@@ -59,6 +60,15 @@ fun WidgetCatalogScreen(
                     hasPermission = hasNotificationPermission,
                     onRequestPermission = onRequestNotificationPermission,
                     receiverClass = TimerWidgetReceiver::class.java,
+                )
+            }
+            item {
+                WidgetPreviewCard(
+                    widgetName = "METRONOME",
+                    widgetDescription = "Practice metronome with BPM presets",
+                    hasPermission = hasNotificationPermission,
+                    onRequestPermission = onRequestNotificationPermission,
+                    receiverClass = MetronomeWidgetReceiver::class.java,
                 )
             }
         }

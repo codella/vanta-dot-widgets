@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application
         android:name=".VantaDotApp"
@@ -60,6 +62,27 @@
 
         <receiver
             android:name=".timer.service.TimerAlarmReceiver"
+            android:exported="false" />
+
+        <activity
+            android:name=".metronome.widget.MetronomeSettingsActivity"
+            android:exported="true"
+            android:theme="@style/Theme.VantaDot" />
+
+        <receiver
+            android:name=".metronome.widget.MetronomeWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/metronome_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".metronome.service.MetronomeService"
+            android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
 
     </application>

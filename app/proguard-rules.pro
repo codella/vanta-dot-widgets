@@ -26,5 +26,13 @@
 # Timer alarm receiver
 -keep class dk.codella.vantadot.timer.service.TimerAlarmReceiver { *; }
 
+# Metronome widget
+-keep class dk.codella.vantadot.metronome.widget.MetronomeWidgetReceiver { *; }
+-keep class dk.codella.vantadot.metronome.widget.MetronomeSettingsActivity { *; }
+-keep class dk.codella.vantadot.metronome.widget.PlayStopActionCallback { *; }
+-keep class dk.codella.vantadot.metronome.widget.AdjustBpmActionCallback { *; }
+-keep class dk.codella.vantadot.metronome.widget.CycleMetronomePresetActionCallback { *; }
+-keep class dk.codella.vantadot.metronome.service.MetronomeService { *; }
+
 # Keep Glance internals
 -keep class androidx.glance.** { *; }
