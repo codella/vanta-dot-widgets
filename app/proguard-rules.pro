@@ -21,7 +21,7 @@
 -keep class dk.codella.vantadot.timer.widget.TimerWidgetReceiver { *; }
 -keep class dk.codella.vantadot.timer.widget.StartPauseActionCallback { *; }
 -keep class dk.codella.vantadot.timer.widget.ResetActionCallback { *; }
--keep class dk.codella.vantadot.timer.widget.PresetActionCallback { *; }
+-keep class dk.codella.vantadot.timer.widget.CyclePresetActionCallback { *; }
 
 # Timer alarm receiver
 -keep class dk.codella.vantadot.timer.service.TimerAlarmReceiver { *; }

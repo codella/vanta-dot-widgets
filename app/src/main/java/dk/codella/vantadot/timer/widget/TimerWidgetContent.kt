@@ -7,8 +7,6 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
-import androidx.glance.LocalSize
-import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
@@ -37,8 +35,6 @@ fun TimerWidgetContent(
     accentColorIndex: Int = 0,
     presetMinutes: List<Int> = listOf(1, 5, 15, 30),
 ) {
-    val size = LocalSize.current
-    val isFull = size.height >= TimerWidgetSizes.FULL.height
     val fontScale = FontSizePreset.fromIndex(fontSizePreset).scaleFactor
     val accent = AccentColorPreset.fromIndex(accentColorIndex)
     val remainingMillis = timerState.remainingMillis
@@ -53,22 +49,13 @@ fun TimerWidgetContent(
         Column(
             modifier = GlanceModifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Time display
-            Spacer(modifier = GlanceModifier.defaultWeight())
+            // Time display — tap to cycle presets when IDLE
             TimeDisplay(remainingMillis, timerState.status, fontScale, accent)
-            Spacer(modifier = GlanceModifier.defaultWeight())
+            Spacer(modifier = GlanceModifier.height(6.dp))
 
-            // Progress bar (always present to avoid layout shift)
-            ProgressBar(remainingMillis, timerState.durationMillis, timerState.status, accent)
-            Spacer(modifier = GlanceModifier.height(8.dp))
-
-            // Control buttons
             ControlButtons(timerState.status, fontScale, accent)
-
-            // Preset buttons
-            Spacer(modifier = GlanceModifier.height(8.dp))
-            PresetButtons(fontScale, presetMinutes)
         }
     }
 }
@@ -87,41 +74,22 @@ private fun TimeDisplay(remainingMillis: Long, status: TimerStatus, fontScale: F
         TimerStatus.IDLE -> android.graphics.Color.WHITE
     }
 
-    Image(
-        provider = ImageProvider(
-            GlanceText.renderDotoText(
-                context = context,
-                text = timeText,
-                textSizeSp = 40f * fontScale,
-                color = color,
-            )
-        ),
-        contentDescription = "$minutes minutes $seconds seconds remaining",
-    )
-}
-
-@Composable
-private fun ProgressBar(remainingMillis: Long, durationMillis: Long, status: TimerStatus, accent: AccentColorPreset) {
-    val barBg = if (status == TimerStatus.IDLE) VantaDotWidgetTheme.GreyDark else VantaDotWidgetTheme.GreyMedium
-    val showFill = status != TimerStatus.IDLE && durationMillis > 0
-    val fraction = if (showFill) (remainingMillis.toFloat() / durationMillis).coerceIn(0f, 1f) else 0f
-    val availableWidth = LocalSize.current.width - VantaDotWidgetTheme.Padding * 2
-    val filledWidth = (availableWidth.value * fraction).coerceAtLeast(0f)
-
-    Box(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .height(3.dp)
-            .background(barBg),
-    ) {
-        if (filledWidth > 0f) {
-            Box(
-                modifier = GlanceModifier
-                    .width(filledWidth.dp)
-                    .height(3.dp)
-                    .background(accent.swatchColor),
-            ) {}
-        }
+    if (status == TimerStatus.IDLE) {
+        // Show chevrons as single bitmap to avoid Glance scaling inconsistencies
+        Image(
+            provider = ImageProvider(
+                GlanceText.renderDotoText(context, "<  $timeText  >", 40f * fontScale, color)
+            ),
+            contentDescription = "$minutes minutes $seconds seconds, tap to change",
+            modifier = GlanceModifier.clickable(actionRunCallback<CyclePresetActionCallback>()),
+        )
+    } else {
+        Image(
+            provider = ImageProvider(
+                GlanceText.renderDotoText(context, timeText, 40f * fontScale, color)
+            ),
+            contentDescription = "$minutes minutes $seconds seconds remaining",
+        )
     }
 }
 
@@ -180,40 +148,6 @@ private fun ControlButtons(status: TimerStatus, fontScale: Float, accent: Accent
                 ),
                 contentDescription = "Reset",
             )
-        }
-    }
-}
-
-@Composable
-private fun PresetButtons(fontScale: Float, presetMinutes: List<Int>) {
-    val context = LocalContext.current
-    val presets = presetMinutes.map { "${it}M" to it.toLong() }
-
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        presets.forEachIndexed { index, (label, minutes) ->
-            if (index > 0) Spacer(modifier = GlanceModifier.width(6.dp))
-            Box(
-                modifier = GlanceModifier
-                    .cornerRadius(8.dp)
-                    .background(VantaDotWidgetTheme.GreyMedium)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                    .clickable(
-                        actionRunCallback<PresetActionCallback>(
-                            actionParametersOf(DurationParam to minutes * 60 * 1000L)
-                        )
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Image(
-                    provider = ImageProvider(
-                        GlanceText.renderDotoText(context, label, 11f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
-                    ),
-                    contentDescription = "$label preset",
-                )
-            }
         }
     }
 }
