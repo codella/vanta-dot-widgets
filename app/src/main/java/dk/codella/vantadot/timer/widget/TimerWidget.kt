@@ -27,7 +27,7 @@ class TimerWidget : GlanceAppWidget() {
                 timerState = timerState,
                 fontSizePreset = settings.fontSizePreset,
                 accentColorIndex = settings.accentColorIndex,
-                presetMinutes = settings.timerPresets,
+                presets = settings.timerPresets,
             )
         }
     }

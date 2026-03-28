@@ -75,23 +75,29 @@ class ResetActionCallback : ActionCallback {
     }
 }
 
+val ForwardParam = ActionParameters.Key<Boolean>("forward")
+
 class CyclePresetActionCallback : ActionCallback {
     override suspend fun onAction(
         context: Context,
         glanceId: GlanceId,
         parameters: ActionParameters,
     ) {
+        val forward = parameters[ForwardParam] ?: true
+
         updateAppWidgetState(context, glanceId) { prefs ->
             val state = TimerWidgetState.fromPreferences(prefs)
             if (state.status != TimerStatus.IDLE) return@updateAppWidgetState
 
             val settings = dk.codella.vantadot.settings.WidgetSettings.fromPreferences(prefs)
-            val presetMillis = settings.timerPresets.map { it * 60 * 1000L }
+            val presetMillis = settings.timerPresets.map { it.seconds * 1000L }
             if (presetMillis.isEmpty()) return@updateAppWidgetState
 
-            // Find next preset after current duration, wrapping around
             val currentIndex = presetMillis.indexOf(state.durationMillis)
-            val nextIndex = if (currentIndex == -1) 0 else (currentIndex + 1) % presetMillis.size
+            val size = presetMillis.size
+            val nextIndex = if (currentIndex == -1) 0
+                else if (forward) (currentIndex + 1) % size
+                else (currentIndex - 1 + size) % size
             val nextDuration = presetMillis[nextIndex]
 
             TimerWidgetState.writeTo(prefs, state.copy(

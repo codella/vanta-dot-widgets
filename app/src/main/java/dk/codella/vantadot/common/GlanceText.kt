@@ -145,6 +145,38 @@ object GlanceText {
         return bitmap
     }
 
+    fun renderChevron(
+        context: Context,
+        sizeDp: Float,
+        color: Int,
+        pointLeft: Boolean,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val sizePx = (sizeDp * density).roundToInt()
+        val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = color
+            style = Paint.Style.STROKE
+            strokeWidth = 2f * density
+            strokeCap = Paint.Cap.ROUND
+            strokeJoin = Paint.Join.ROUND
+        }
+        val margin = sizePx * 0.25f
+        val path = android.graphics.Path()
+        if (pointLeft) {
+            path.moveTo(sizePx - margin, margin)
+            path.lineTo(margin, sizePx / 2f)
+            path.lineTo(sizePx - margin, sizePx - margin)
+        } else {
+            path.moveTo(margin, margin)
+            path.lineTo(sizePx - margin, sizePx / 2f)
+            path.lineTo(margin, sizePx - margin)
+        }
+        canvas.drawPath(path, paint)
+        return bitmap
+    }
+
     fun renderDotoText(
         context: Context,
         text: String,

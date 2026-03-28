@@ -7,6 +7,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
+import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.cornerRadius
@@ -20,11 +21,13 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.layout.width
 import dk.codella.vantadot.common.GlanceText
 import dk.codella.vantadot.common.VantaDotWidgetTheme
 import dk.codella.vantadot.settings.AccentColorPreset
 import dk.codella.vantadot.settings.FontSizePreset
+import dk.codella.vantadot.settings.TimerPreset
 import dk.codella.vantadot.timer.data.TimerStatus
 import dk.codella.vantadot.timer.data.TimerWidgetState
 
@@ -33,11 +36,16 @@ fun TimerWidgetContent(
     timerState: TimerWidgetState,
     fontSizePreset: Int = 1,
     accentColorIndex: Int = 0,
-    presetMinutes: List<Int> = listOf(1, 5, 15, 30),
+    presets: List<TimerPreset> = emptyList(),
 ) {
     val fontScale = FontSizePreset.fromIndex(fontSizePreset).scaleFactor
     val accent = AccentColorPreset.fromIndex(accentColorIndex)
     val remainingMillis = timerState.remainingMillis
+
+    // Find current preset name by matching duration
+    val currentPresetName = presets.firstOrNull {
+        it.seconds * 1000L == timerState.durationMillis
+    }?.name
 
     Box(
         modifier = GlanceModifier
@@ -51,17 +59,21 @@ fun TimerWidgetContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Time display — tap to cycle presets when IDLE
-            TimeDisplay(remainingMillis, timerState.status, fontScale, accent)
+            TimeDisplay(remainingMillis, timerState.status, fontScale, accent, currentPresetName)
             Spacer(modifier = GlanceModifier.height(6.dp))
-
             ControlButtons(timerState.status, fontScale, accent)
         }
     }
 }
 
 @Composable
-private fun TimeDisplay(remainingMillis: Long, status: TimerStatus, fontScale: Float, accent: AccentColorPreset) {
+private fun TimeDisplay(
+    remainingMillis: Long,
+    status: TimerStatus,
+    fontScale: Float,
+    accent: AccentColorPreset,
+    presetName: String?,
+) {
     val context = LocalContext.current
     val totalSeconds = ((remainingMillis + 999) / 1000).toInt()
     val minutes = totalSeconds / 60
@@ -75,14 +87,70 @@ private fun TimeDisplay(remainingMillis: Long, status: TimerStatus, fontScale: F
     }
 
     if (status == TimerStatus.IDLE) {
-        // Show chevrons as single bitmap to avoid Glance scaling inconsistencies
-        Image(
-            provider = ImageProvider(
-                GlanceText.renderDotoText(context, "<  $timeText  >", 40f * fontScale, color)
-            ),
-            contentDescription = "$minutes minutes $seconds seconds, tap to change",
-            modifier = GlanceModifier.clickable(actionRunCallback<CyclePresetActionCallback>()),
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Preset name above the time row
+            if (presetName != null) {
+                Image(
+                    provider = ImageProvider(
+                        GlanceText.renderDotoText(context, presetName.uppercase(), 11f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
+                    ),
+                    contentDescription = presetName,
+                )
+                Spacer(modifier = GlanceModifier.height(2.dp))
+            }
+
+            // Chevrons + time on the same line
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = GlanceModifier
+                        .size(24.dp)
+                        .clickable(
+                            actionRunCallback<CyclePresetActionCallback>(
+                                actionParametersOf(ForwardParam to false)
+                            )
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        provider = ImageProvider(
+                            GlanceText.renderChevron(context, 16f, VantaDotWidgetTheme.GreyLightArgb, pointLeft = true)
+                        ),
+                        contentDescription = "Previous preset",
+                        modifier = GlanceModifier.size(16.dp),
+                    )
+                }
+
+                Spacer(modifier = GlanceModifier.width(8.dp))
+
+                Image(
+                    provider = ImageProvider(
+                        GlanceText.renderDotoText(context, timeText, 40f * fontScale, color)
+                    ),
+                    contentDescription = "$minutes minutes $seconds seconds",
+                )
+
+                Spacer(modifier = GlanceModifier.width(8.dp))
+
+                Box(
+                    modifier = GlanceModifier
+                        .size(24.dp)
+                        .clickable(
+                            actionRunCallback<CyclePresetActionCallback>(
+                                actionParametersOf(ForwardParam to true)
+                            )
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        provider = ImageProvider(
+                            GlanceText.renderChevron(context, 16f, VantaDotWidgetTheme.GreyLightArgb, pointLeft = false)
+                        ),
+                        contentDescription = "Next preset",
+                        modifier = GlanceModifier.size(16.dp),
+                    )
+                }
+            }
+        }
     } else {
         Image(
             provider = ImageProvider(
@@ -114,7 +182,6 @@ private fun ControlButtons(status: TimerStatus, fontScale: Float, accent: Accent
         modifier = GlanceModifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Start/Pause button
         Box(
             modifier = GlanceModifier
                 .cornerRadius(8.dp)
@@ -133,7 +200,6 @@ private fun ControlButtons(status: TimerStatus, fontScale: Float, accent: Accent
 
         Spacer(modifier = GlanceModifier.width(8.dp))
 
-        // Reset button
         Box(
             modifier = GlanceModifier
                 .cornerRadius(8.dp)
