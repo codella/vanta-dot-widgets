@@ -86,8 +86,8 @@ fun TimerSettingsScreen(
             }
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "TIMER SETTINGS",
-                style = MaterialTheme.typography.headlineMedium,
+                text = "SETTINGS",
+                style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
         }
