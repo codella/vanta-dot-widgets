@@ -46,10 +46,17 @@ class CalendarWidgetReceiver : GlanceAppWidgetReceiver() {
 
 private object MinuteTickReceiver : android.content.BroadcastReceiver() {
     private var registered = false
+    private var lastDate: Int = -1
 
     fun register(context: Context) {
         if (registered) return
-        context.applicationContext.registerReceiver(this, IntentFilter(Intent.ACTION_TIME_TICK))
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_TIME_TICK)
+            addAction(Intent.ACTION_DATE_CHANGED)
+            addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        }
+        context.applicationContext.registerReceiver(this, filter)
+        lastDate = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR)
         registered = true
     }
 
@@ -62,12 +69,31 @@ private object MinuteTickReceiver : android.content.BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent?) {
-        if (intent?.action != Intent.ACTION_TIME_TICK) return
+        val action = intent?.action ?: return
         val result = goAsync()
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             try {
-                // Just re-render — cached events are filtered by endTime in provideContent,
-                // and urgency recalculates from System.currentTimeMillis()
+                val needsRefresh = when (action) {
+                    Intent.ACTION_DATE_CHANGED, Intent.ACTION_TIMEZONE_CHANGED -> true
+                    Intent.ACTION_TIME_TICK -> {
+                        // Detect date rollover (midnight) even if ACTION_DATE_CHANGED is delayed
+                        val today = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_YEAR)
+                        if (today != lastDate) {
+                            lastDate = today
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    else -> false
+                }
+
+                if (needsRefresh) {
+                    val manager = GlanceAppWidgetManager(context)
+                    for (id in manager.getGlanceIds(CalendarWidget::class.java)) {
+                        CalendarWidget.refreshEventsIntoState(context, id)
+                    }
+                }
                 CalendarWidget().updateAll(context)
             } finally {
                 result.finish()

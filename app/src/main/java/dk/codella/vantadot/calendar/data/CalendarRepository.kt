@@ -36,7 +36,8 @@ class CalendarRepository(private val context: Context) {
         private const val COL_SELF_ATTENDEE_STATUS = 8
         private const val COL_CALENDAR_ID = 9
 
-        private fun endOfToday(): Long = Calendar.getInstance().apply {
+        private fun endOfDayPlusDays(days: Int): Long = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, days)
             set(Calendar.HOUR_OF_DAY, 23)
             set(Calendar.MINUTE, 59)
             set(Calendar.SECOND, 59)
@@ -51,7 +52,7 @@ class CalendarRepository(private val context: Context) {
             if (!hasCalendarPermission()) return@withContext emptyList()
 
             val now = System.currentTimeMillis()
-            val end = endOfToday()
+            val end = endOfDayPlusDays(7)
 
             val builder = CalendarContract.Instances.CONTENT_URI.buildUpon()
             ContentUris.appendId(builder, now)
