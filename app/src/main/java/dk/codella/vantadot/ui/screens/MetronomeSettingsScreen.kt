@@ -99,7 +99,7 @@ fun MetronomeSettingsScreen(
                     color = VantaDotWhite,
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "SETTINGS",
                 style = MaterialTheme.typography.headlineLarge,
