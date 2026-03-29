@@ -38,7 +38,7 @@ data class WidgetSettings(
     val metronomeSoundChoice: Int = 0,
     // Binary clock settings
     val binaryClockShowSeconds: Boolean = true,
-    val binaryClockUse24Hour: Boolean = false,
+    val binaryClockUse24Hour: Boolean = true,
     val binaryClockShowDigitalTime: Boolean = false,
     val binaryClockShowBitLabels: Boolean = false,
     val binaryClockShowColumnLabels: Boolean = false,
@@ -160,7 +160,7 @@ data class WidgetSettings(
             metronomeVibration = prefs[MetronomeVibrationKey] ?: false,
             metronomeSoundChoice = prefs[MetronomeSoundChoiceKey] ?: 0,
             binaryClockShowSeconds = prefs[BinaryClockShowSecondsKey] ?: true,
-            binaryClockUse24Hour = prefs[BinaryClockUse24HourKey] ?: false,
+            binaryClockUse24Hour = prefs[BinaryClockUse24HourKey] ?: true,
             binaryClockShowDigitalTime = prefs[BinaryClockShowDigitalTimeKey] ?: false,
             binaryClockShowBitLabels = prefs[BinaryClockShowBitLabelsKey] ?: false,
             binaryClockShowColumnLabels = prefs[BinaryClockShowColumnLabelsKey] ?: false,
