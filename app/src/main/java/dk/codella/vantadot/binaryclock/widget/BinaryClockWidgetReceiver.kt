@@ -29,8 +29,16 @@ class BinaryClockWidgetReceiver : GlanceAppWidgetReceiver() {
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         ClockMinuteTickReceiver.register(context)
-        // onUpdate is called after configure activity finishes,
-        // so GlanceIds are now registered — safe to start ticking
+        // Immediate time write so widget doesn't show stale data
+        val result = goAsync()
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            try {
+                writeTimeToAllWidgets(context)
+                BinaryClockWidget().updateAll(context)
+            } finally {
+                result.finish()
+            }
+        }
         BinaryClockSecondTickHandler.startIfNotRunning(context)
     }
 
@@ -41,7 +49,8 @@ class BinaryClockWidgetReceiver : GlanceAppWidgetReceiver() {
     }
 }
 
-private object ClockMinuteTickReceiver : android.content.BroadcastReceiver() {
+internal object ClockMinuteTickReceiver : android.content.BroadcastReceiver() {
+    @Volatile
     private var registered = false
 
     fun register(context: Context) {
@@ -49,6 +58,8 @@ private object ClockMinuteTickReceiver : android.content.BroadcastReceiver() {
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_TIME_TICK)
             addAction(Intent.ACTION_TIMEZONE_CHANGED)
+            addAction(Intent.ACTION_SCREEN_ON)
+            addAction(Intent.ACTION_SCREEN_OFF)
         }
         context.applicationContext.registerReceiver(this, filter)
         registered = true
@@ -63,12 +74,22 @@ private object ClockMinuteTickReceiver : android.content.BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent?) {
+        when (intent?.action) {
+            Intent.ACTION_SCREEN_OFF -> {
+                BinaryClockSecondTickHandler.stop()
+                return
+            }
+            Intent.ACTION_SCREEN_ON -> {
+                BinaryClockSecondTickHandler.start(context)
+                return
+            }
+        }
+        // ACTION_TIME_TICK or ACTION_TIMEZONE_CHANGED
         val result = goAsync()
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             try {
                 writeTimeToAllWidgets(context)
                 BinaryClockWidget().updateAll(context)
-                // Restart second tick if process was killed and coroutine died
                 BinaryClockSecondTickHandler.startIfNotRunning(context)
             } finally {
                 result.finish()
@@ -78,6 +99,7 @@ private object ClockMinuteTickReceiver : android.content.BroadcastReceiver() {
 }
 
 object BinaryClockSecondTickHandler {
+    @Volatile
     private var job: Job? = null
 
     val HourKey = intPreferencesKey("binary_clock_hour")
@@ -89,7 +111,8 @@ object BinaryClockSecondTickHandler {
         job?.cancel()
         job = CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             while (isActive) {
-                delay(1000)
+                val now = System.currentTimeMillis()
+                delay(1000 - (now % 1000))
                 try {
                     writeTimeToAllWidgets(ctx)
                     BinaryClockWidget().updateAll(ctx)
@@ -109,7 +132,7 @@ object BinaryClockSecondTickHandler {
     }
 }
 
-private suspend fun writeTimeToAllWidgets(context: Context) {
+internal suspend fun writeTimeToAllWidgets(context: Context) {
     val cal = Calendar.getInstance()
     val h = cal.get(Calendar.HOUR_OF_DAY)
     val m = cal.get(Calendar.MINUTE)

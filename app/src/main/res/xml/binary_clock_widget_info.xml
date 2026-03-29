@@ -10,7 +10,7 @@
     android:targetCellWidth="3"
     android:targetCellHeight="2"
     android:resizeMode="horizontal|vertical"
-    android:updatePeriodMillis="0"
+    android:updatePeriodMillis="1800000"
     android:description="@string/binary_clock_widget_description"
     android:widgetCategory="home_screen"
     android:configure="dk.codella.vantadot.binaryclock.widget.BinaryClockSettingsActivity"
