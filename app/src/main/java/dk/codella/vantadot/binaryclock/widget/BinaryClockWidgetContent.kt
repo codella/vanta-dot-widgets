@@ -43,12 +43,7 @@ fun BinaryClockWidgetContent() {
     val minute = prefs[BinaryClockSecondTickHandler.MinuteKey] ?: fallback.get(Calendar.MINUTE)
     val second = prefs[BinaryClockSecondTickHandler.SecondKey] ?: fallback.get(Calendar.SECOND)
 
-    val hours = if (settings.binaryClockUse24Hour) hour24
-                else {
-                    val h = hour24 % 12
-                    if (h == 0) 12 else h
-                }
-    val isPm = hour24 >= 12
+    val hours = hour24
 
     // Calculate optimal dot size to fill available space
     val padding = VantaDotWidgetTheme.Padding.value
@@ -101,16 +96,9 @@ fun BinaryClockWidgetContent() {
                 Spacer(modifier = GlanceModifier.height(4.dp))
 
                 val timeString = buildString {
-                    if (settings.binaryClockUse24Hour) {
-                        append(String.format("%02d:%02d", hours, minute))
-                    } else {
-                        append(String.format("%d:%02d", hours, minute))
-                    }
+                    append(String.format("%02d:%02d", hours, minute))
                     if (settings.binaryClockShowSeconds) {
                         append(String.format(":%02d", second))
-                    }
-                    if (!settings.binaryClockUse24Hour) {
-                        append(if (isPm) " PM" else " AM")
                     }
                 }
 

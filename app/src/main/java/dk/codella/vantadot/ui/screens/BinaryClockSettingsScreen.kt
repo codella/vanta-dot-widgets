@@ -37,7 +37,6 @@ fun BinaryClockSettingsScreen(
     onSettingsChanged: (WidgetSettings) -> Unit,
 ) {
     var showSeconds by remember { mutableStateOf(initialSettings.binaryClockShowSeconds) }
-    var use24Hour by remember { mutableStateOf(initialSettings.binaryClockUse24Hour) }
     var showDigitalTime by remember { mutableStateOf(initialSettings.binaryClockShowDigitalTime) }
     var showBitLabels by remember { mutableStateOf(initialSettings.binaryClockShowBitLabels) }
     var showColumnLabels by remember { mutableStateOf(initialSettings.binaryClockShowColumnLabels) }
@@ -47,7 +46,6 @@ fun BinaryClockSettingsScreen(
 
     fun currentSettings() = initialSettings.copy(
         binaryClockShowSeconds = showSeconds,
-        binaryClockUse24Hour = use24Hour,
         binaryClockShowDigitalTime = showDigitalTime,
         binaryClockShowBitLabels = showBitLabels,
         binaryClockShowColumnLabels = showColumnLabels,
@@ -97,12 +95,6 @@ fun BinaryClockSettingsScreen(
             item {
                 SettingToggle("SHOW SECONDS", showSeconds) {
                     showSeconds = it; save()
-                }
-            }
-
-            item {
-                SettingToggle("24-HOUR FORMAT", use24Hour) {
-                    use24Hour = it; save()
                 }
             }
 

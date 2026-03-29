@@ -38,7 +38,6 @@ data class WidgetSettings(
     val metronomeSoundChoice: Int = 0,
     // Binary clock settings
     val binaryClockShowSeconds: Boolean = true,
-    val binaryClockUse24Hour: Boolean = true,
     val binaryClockShowDigitalTime: Boolean = false,
     val binaryClockShowBitLabels: Boolean = false,
     val binaryClockShowColumnLabels: Boolean = false,
@@ -81,7 +80,6 @@ data class WidgetSettings(
         val MetronomeVibrationKey = booleanPreferencesKey("metronome_vibration")
         val MetronomeSoundChoiceKey = intPreferencesKey("metronome_sound_choice")
         val BinaryClockShowSecondsKey = booleanPreferencesKey("binary_clock_show_seconds")
-        val BinaryClockUse24HourKey = booleanPreferencesKey("binary_clock_use_24_hour")
         val BinaryClockShowDigitalTimeKey = booleanPreferencesKey("binary_clock_show_digital_time")
         val BinaryClockShowBitLabelsKey = booleanPreferencesKey("binary_clock_show_bit_labels")
         val BinaryClockShowColumnLabelsKey = booleanPreferencesKey("binary_clock_show_column_labels")
@@ -160,7 +158,6 @@ data class WidgetSettings(
             metronomeVibration = prefs[MetronomeVibrationKey] ?: false,
             metronomeSoundChoice = prefs[MetronomeSoundChoiceKey] ?: 0,
             binaryClockShowSeconds = prefs[BinaryClockShowSecondsKey] ?: true,
-            binaryClockUse24Hour = prefs[BinaryClockUse24HourKey] ?: true,
             binaryClockShowDigitalTime = prefs[BinaryClockShowDigitalTimeKey] ?: false,
             binaryClockShowBitLabels = prefs[BinaryClockShowBitLabelsKey] ?: false,
             binaryClockShowColumnLabels = prefs[BinaryClockShowColumnLabelsKey] ?: false,
@@ -191,7 +188,6 @@ data class WidgetSettings(
             prefs[MetronomeVibrationKey] = settings.metronomeVibration
             prefs[MetronomeSoundChoiceKey] = settings.metronomeSoundChoice
             prefs[BinaryClockShowSecondsKey] = settings.binaryClockShowSeconds
-            prefs[BinaryClockUse24HourKey] = settings.binaryClockUse24Hour
             prefs[BinaryClockShowDigitalTimeKey] = settings.binaryClockShowDigitalTime
             prefs[BinaryClockShowBitLabelsKey] = settings.binaryClockShowBitLabels
             prefs[BinaryClockShowColumnLabelsKey] = settings.binaryClockShowColumnLabels
