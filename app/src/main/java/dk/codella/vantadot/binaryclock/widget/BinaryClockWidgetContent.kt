@@ -48,8 +48,7 @@ fun BinaryClockWidgetContent() {
     // Calculate optimal dot size to fill available space
     val padding = VantaDotWidgetTheme.Padding.value
     val availableWidth = size.width.value - 2 * padding
-    val digitalTimeHeight = if (settings.binaryClockShowDigitalTime) 18f else 0f
-    val availableHeight = size.height.value - 2 * padding - digitalTimeHeight
+    val availableHeight = size.height.value - 2 * padding
 
     val numCols = if (settings.binaryClockShowSeconds) 6 else 4
     val numGroups = numCols / 2
@@ -92,28 +91,6 @@ fun BinaryClockWidgetContent() {
                 contentDescription = "Binary clock",
             )
 
-            if (settings.binaryClockShowDigitalTime) {
-                Spacer(modifier = GlanceModifier.height(4.dp))
-
-                val timeString = buildString {
-                    append(String.format("%02d:%02d", hours, minute))
-                    if (settings.binaryClockShowSeconds) {
-                        append(String.format(":%02d", second))
-                    }
-                }
-
-                Image(
-                    provider = ImageProvider(
-                        GlanceText.renderDotoText(
-                            context,
-                            timeString,
-                            12f * fontScale,
-                            VantaDotWidgetTheme.GreyLightArgb,
-                        )
-                    ),
-                    contentDescription = timeString,
-                )
-            }
         }
     }
 }
