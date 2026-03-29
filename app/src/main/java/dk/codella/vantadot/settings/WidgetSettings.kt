@@ -44,6 +44,7 @@ data class WidgetSettings(
     val binaryClockShowColumnLabels: Boolean = false,
     val binaryClockDotShape: Int = 1,
     val binaryClockAccentColorIndex: Int = 6,
+    val binaryClockFontSizePreset: Int = 0,
 ) {
     companion object {
         const val DEFAULT_MAX_EVENTS = 20
@@ -86,6 +87,7 @@ data class WidgetSettings(
         val BinaryClockShowColumnLabelsKey = booleanPreferencesKey("binary_clock_show_column_labels")
         val BinaryClockDotShapeKey = intPreferencesKey("binary_clock_dot_shape")
         val BinaryClockAccentColorIndexKey = intPreferencesKey("binary_clock_accent_color_index")
+        val BinaryClockFontSizePresetKey = intPreferencesKey("binary_clock_font_size_preset")
 
         private fun parsePresets(json: String): List<TimerPreset> {
             return try {
@@ -164,6 +166,7 @@ data class WidgetSettings(
             binaryClockShowColumnLabels = prefs[BinaryClockShowColumnLabelsKey] ?: false,
             binaryClockDotShape = prefs[BinaryClockDotShapeKey] ?: 1,
             binaryClockAccentColorIndex = prefs[BinaryClockAccentColorIndexKey] ?: 6,
+            binaryClockFontSizePreset = prefs[BinaryClockFontSizePresetKey] ?: 0,
         )
 
         fun writeTo(prefs: MutablePreferences, settings: WidgetSettings) {
@@ -194,6 +197,7 @@ data class WidgetSettings(
             prefs[BinaryClockShowColumnLabelsKey] = settings.binaryClockShowColumnLabels
             prefs[BinaryClockDotShapeKey] = settings.binaryClockDotShape
             prefs[BinaryClockAccentColorIndexKey] = settings.binaryClockAccentColorIndex
+            prefs[BinaryClockFontSizePresetKey] = settings.binaryClockFontSizePreset
         }
     }
 }

@@ -43,7 +43,7 @@ fun BinaryClockSettingsScreen(
     var showColumnLabels by remember { mutableStateOf(initialSettings.binaryClockShowColumnLabels) }
     var dotShape by remember { mutableIntStateOf(initialSettings.binaryClockDotShape) }
     var accentIndex by remember { mutableIntStateOf(initialSettings.binaryClockAccentColorIndex) }
-    var fontSizePreset by remember { mutableIntStateOf(initialSettings.fontSizePreset) }
+    var fontSizePreset by remember { mutableIntStateOf(initialSettings.binaryClockFontSizePreset) }
 
     fun currentSettings() = initialSettings.copy(
         binaryClockShowSeconds = showSeconds,
@@ -53,7 +53,7 @@ fun BinaryClockSettingsScreen(
         binaryClockShowColumnLabels = showColumnLabels,
         binaryClockDotShape = dotShape,
         binaryClockAccentColorIndex = accentIndex,
-        fontSizePreset = fontSizePreset,
+        binaryClockFontSizePreset = fontSizePreset,
     )
 
     fun save() {

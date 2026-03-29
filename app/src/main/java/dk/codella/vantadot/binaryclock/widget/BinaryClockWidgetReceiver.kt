@@ -29,16 +29,6 @@ class BinaryClockWidgetReceiver : GlanceAppWidgetReceiver() {
     ) {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
         ClockMinuteTickReceiver.register(context)
-        // Immediate time write so widget doesn't show stale data
-        val result = goAsync()
-        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
-            try {
-                writeTimeToAllWidgets(context)
-                BinaryClockWidget().updateAll(context)
-            } finally {
-                result.finish()
-            }
-        }
         BinaryClockSecondTickHandler.startIfNotRunning(context)
     }
 

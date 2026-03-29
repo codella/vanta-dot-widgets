@@ -288,49 +288,22 @@ object GlanceText {
 
                 dotPaint.color = if (isOn) onColor else offColor
 
+                dotPaint.style = Paint.Style.FILL
+
                 when (dotShape) {
-                    0 -> { // Circle
-                        if (isOn) {
-                            dotPaint.style = Paint.Style.FILL
-                            canvas.drawCircle(cx, cy, dotSizePx / 2, dotPaint)
-                        } else {
-                            dotPaint.style = Paint.Style.STROKE
-                            dotPaint.strokeWidth = strokeWidth
-                            canvas.drawCircle(cx, cy, (dotSizePx - strokeWidth) / 2, dotPaint)
-                        }
-                    }
-                    1 -> { // Square
-                        if (isOn) {
-                            dotPaint.style = Paint.Style.FILL
-                            canvas.drawRect(
-                                colX[col], rowY[row],
-                                colX[col] + dotSizePx, rowY[row] + dotSizePx,
-                                dotPaint,
-                            )
-                        } else {
-                            dotPaint.style = Paint.Style.STROKE
-                            dotPaint.strokeWidth = strokeWidth
-                            val half = strokeWidth / 2
-                            canvas.drawRect(
-                                colX[col] + half, rowY[row] + half,
-                                colX[col] + dotSizePx - half, rowY[row] + dotSizePx - half,
-                                dotPaint,
-                            )
-                        }
-                    }
-                    else -> { // Diamond
+                    0 -> canvas.drawCircle(cx, cy, dotSizePx / 2, dotPaint)
+                    1 -> canvas.drawRect(
+                        colX[col], rowY[row],
+                        colX[col] + dotSizePx, rowY[row] + dotSizePx,
+                        dotPaint,
+                    )
+                    else -> {
                         val path = android.graphics.Path().apply {
                             moveTo(cx, rowY[row])
                             lineTo(colX[col] + dotSizePx, cy)
                             lineTo(cx, rowY[row] + dotSizePx)
                             lineTo(colX[col], cy)
                             close()
-                        }
-                        if (isOn) {
-                            dotPaint.style = Paint.Style.FILL
-                        } else {
-                            dotPaint.style = Paint.Style.STROKE
-                            dotPaint.strokeWidth = strokeWidth
                         }
                         canvas.drawPath(path, dotPaint)
                     }

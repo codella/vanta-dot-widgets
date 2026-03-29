@@ -33,7 +33,7 @@ fun BinaryClockWidgetContent() {
     val size = LocalSize.current
     val prefs = currentState<Preferences>()
     val settings = WidgetSettings.fromPreferences(prefs)
-    val fontScale = FontSizePreset.fromIndex(settings.fontSizePreset).scaleFactor
+    val fontScale = FontSizePreset.fromIndex(settings.binaryClockFontSizePreset).scaleFactor
     val accent = AccentColorPreset.fromIndex(settings.binaryClockAccentColorIndex)
 
     // Read time from state (written by tick handler / minute tick)
@@ -89,7 +89,7 @@ fun BinaryClockWidgetContent() {
                         showColumnLabels = settings.binaryClockShowColumnLabels,
                         dotShape = settings.binaryClockDotShape,
                         onColor = accent.swatchColor.toArgb(),
-                        offColor = VantaDotWidgetTheme.GreyMediumArgb,
+                        offColor = 0xFF222222.toInt(),
                         labelColor = VantaDotWidgetTheme.GreyLightArgb,
                         dotSizeDp = dotSizeDp,
                     )
