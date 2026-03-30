@@ -25,6 +25,7 @@ data class WidgetSettings(
     val showCompactTime: Boolean = false,
     val fontSizePreset: Int = 1,
     val wrapText: Boolean = false,
+    val showEmptyQuote: Boolean = false,
     val useStubData: Boolean = false,
     // Timer settings
     val timerPresets: List<TimerPreset> = DEFAULT_TIMER_PRESETS,
@@ -69,6 +70,7 @@ data class WidgetSettings(
         val ShowCompactTimeKey = booleanPreferencesKey("show_compact_time")
         val FontSizePresetKey = intPreferencesKey("font_size_preset")
         val WrapTextKey = booleanPreferencesKey("wrap_text")
+        val ShowEmptyQuoteKey = booleanPreferencesKey("show_empty_quote")
         val UseStubDataKey = booleanPreferencesKey("use_stub_data")
         val TimerPresetsKey = stringPreferencesKey("timer_presets_json")
         val TimerVibrationKey = booleanPreferencesKey("timer_vibration")
@@ -146,6 +148,7 @@ data class WidgetSettings(
             showCompactTime = prefs[ShowCompactTimeKey] ?: false,
             fontSizePreset = prefs[FontSizePresetKey] ?: 1,
             wrapText = prefs[WrapTextKey] ?: false,
+            showEmptyQuote = prefs[ShowEmptyQuoteKey] ?: false,
             useStubData = prefs[UseStubDataKey] ?: false,
             timerPresets = prefs[TimerPresetsKey]?.let { parsePresets(it) } ?: DEFAULT_TIMER_PRESETS,
             timerVibration = prefs[TimerVibrationKey] ?: true,
@@ -175,6 +178,7 @@ data class WidgetSettings(
             prefs[ShowCompactTimeKey] = settings.showCompactTime
             prefs[FontSizePresetKey] = settings.fontSizePreset
             prefs[WrapTextKey] = settings.wrapText
+            prefs[ShowEmptyQuoteKey] = settings.showEmptyQuote
             prefs[UseStubDataKey] = settings.useStubData
             prefs[TimerPresetsKey] = serializePresets(settings.timerPresets)
             prefs[TimerVibrationKey] = settings.timerVibration

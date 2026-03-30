@@ -73,6 +73,7 @@ fun SettingsScreen(
     var compactTime by remember { mutableStateOf(initialSettings.showCompactTime) }
     var fontSizePreset by remember { mutableIntStateOf(initialSettings.fontSizePreset) }
     var wrapText by remember { mutableStateOf(initialSettings.wrapText) }
+    var showEmptyQuote by remember { mutableStateOf(initialSettings.showEmptyQuote) }
     var useStubData by remember { mutableStateOf(initialSettings.useStubData) }
 
     LaunchedEffect(hasCalendarPermission) {
@@ -93,6 +94,7 @@ fun SettingsScreen(
         showCompactTime = compactTime,
         fontSizePreset = fontSizePreset,
         wrapText = wrapText,
+        showEmptyQuote = showEmptyQuote,
         useStubData = useStubData,
     )
 
@@ -173,6 +175,12 @@ fun SettingsScreen(
             item {
                 SettingToggle("FULL EVENT NAMES", wrapText) {
                     wrapText = it; save()
+                }
+            }
+
+            item {
+                SettingToggle("SHOW EMPTY CALENDAR QUOTE", showEmptyQuote) {
+                    showEmptyQuote = it; save()
                 }
             }
 

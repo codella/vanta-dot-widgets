@@ -74,6 +74,7 @@ fun CalendarWidgetContent(
     showCompactTime: Boolean = false,
     fontSizePreset: Int = 1,
     wrapText: Boolean = false,
+    showEmptyQuote: Boolean = false,
 ) {
     val size = LocalSize.current
     val isFull = size.height >= CalendarWidgetSizes.FULL.height
@@ -92,11 +93,11 @@ fun CalendarWidgetContent(
         Column(modifier = GlanceModifier.fillMaxSize()) {
             if (showHeader) {
                 SectionHeader("Upcoming events", isRefreshing, refreshPhase, fontScale)
-                Spacer(modifier = GlanceModifier.height(12.dp))
+                Spacer(modifier = GlanceModifier.height(4.dp))
             }
             when {
                 !hasPermission -> PermissionMessage(fontScale)
-                events.isEmpty() -> EmptyMessage(fontScale)
+                events.isEmpty() -> EmptyMessage(fontScale, showEmptyQuote)
                 else -> {
                     if (allDayEvents.isNotEmpty()) {
                         AllDaySection(allDayEvents, fontScale)
@@ -119,7 +120,7 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
         textSizeSp = 14f * fontScale,
     )
     Row(
-        modifier = GlanceModifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp).clickable(actionRunCallback<RefreshActionCallback>()),
+        modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp).clickable(actionRunCallback<RefreshActionCallback>()),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(
@@ -206,10 +207,8 @@ private val INSPIRATIONAL_QUOTES = listOf(
 )
 
 @Composable
-private fun EmptyMessage(fontScale: Float = 1f) {
+private fun EmptyMessage(fontScale: Float = 1f, showQuote: Boolean = false) {
     val context = LocalContext.current
-    val dayIndex = (System.currentTimeMillis() / 86_400_000).mod(INSPIRATIONAL_QUOTES.size)
-    val quote = INSPIRATIONAL_QUOTES[dayIndex]
     Column(modifier = GlanceModifier.padding(start = 10.dp)) {
         Image(
             provider = ImageProvider(
@@ -217,13 +216,17 @@ private fun EmptyMessage(fontScale: Float = 1f) {
             ),
             contentDescription = "No upcoming events",
         )
-        Spacer(modifier = GlanceModifier.height(8.dp))
-        Image(
-            provider = ImageProvider(
-                GlanceText.renderDotoText(context, quote, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
-            ),
-            contentDescription = quote,
-        )
+        if (showQuote) {
+            val dayIndex = (System.currentTimeMillis() / 86_400_000).mod(INSPIRATIONAL_QUOTES.size)
+            val quote = INSPIRATIONAL_QUOTES[dayIndex]
+            Spacer(modifier = GlanceModifier.height(8.dp))
+            Image(
+                provider = ImageProvider(
+                    GlanceText.renderDotoText(context, quote, 12f * fontScale, VantaDotWidgetTheme.GreyLightArgb)
+                ),
+                contentDescription = quote,
+            )
+        }
     }
 }
 
