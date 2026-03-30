@@ -77,13 +77,13 @@ class CalendarRepository(private val context: Context) {
                     events.add(
                         CalendarEvent(
                             id = cursor.getLong(COL_EVENT_ID),
-                            title = cursor.getString(COL_TITLE) ?: "",
+                            title = cursor.getString(COL_TITLE).trimInvisible() ?: "",
                             beginTime = cursor.getLong(COL_BEGIN),
                             endTime = endTime,
                             isAllDay = isAllDay,
                             calendarColor = cursor.getInt(COL_COLOR),
-                            location = cursor.getString(COL_LOCATION),
-                            description = cursor.getString(COL_DESCRIPTION),
+                            location = cursor.getString(COL_LOCATION).trimInvisible(),
+                            description = cursor.getString(COL_DESCRIPTION).trimInvisible(),
                             selfAttendeeStatus = cursor.getInt(COL_SELF_ATTENDEE_STATUS),
                         )
                     )
@@ -129,3 +129,7 @@ class CalendarRepository(private val context: Context) {
             android.Manifest.permission.READ_CALENDAR,
         ) == PackageManager.PERMISSION_GRANTED
 }
+
+private fun String?.trimInvisible(): String? =
+    this?.trim { it.isWhitespace() || it.category == CharCategory.FORMAT || it.category == CharCategory.CONTROL }
+        ?.ifEmpty { null }
