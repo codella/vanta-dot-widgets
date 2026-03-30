@@ -77,6 +77,10 @@ class BannerSettingsActivity : ComponentActivity() {
             val glanceId = manager.getGlanceIdBy(appWidgetId)
             updateAppWidgetState(context, glanceId) { prefs ->
                 WidgetSettings.writeTo(prefs, settings)
+                // Reset scroll state so new direction/speed takes effect immediately
+                prefs.remove(BannerScrollTickHandler.CurrentLtrKey)
+                prefs.remove(BannerScrollTickHandler.ScrollOffsetKey)
+                prefs.remove(BannerScrollTickHandler.GapUntilKey)
             }
             BannerWidget().update(context, glanceId)
             BannerScrollTickHandler.startIfNotRunning(context)

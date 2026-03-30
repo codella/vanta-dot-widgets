@@ -50,7 +50,7 @@ data class WidgetSettings(
     val bannerMessages: List<BannerMessageEntry> = DEFAULT_BANNER_MESSAGES,
     val bannerVibe: Int = 0,
     val bannerScrollSpeed: Int = 5,
-    val bannerScrollFromLeft: Boolean = false,
+    val bannerScrollDirection: Int = 0,
     val bannerGapSeconds: Int = 1,
     val bannerAccentColorIndex: Int = 0,
     val bannerFontSizePreset: Int = 1,
@@ -103,7 +103,7 @@ data class WidgetSettings(
         val BannerMessagesKey = stringPreferencesKey("banner_messages_json")
         val BannerVibeKey = intPreferencesKey("banner_vibe")
         val BannerScrollSpeedKey = intPreferencesKey("banner_scroll_speed")
-        val BannerScrollFromLeftKey = booleanPreferencesKey("banner_scroll_from_left")
+        val BannerScrollDirectionKey = intPreferencesKey("banner_scroll_direction")
         val BannerGapSecondsKey = intPreferencesKey("banner_gap_seconds")
         val BannerAccentColorIndexKey = intPreferencesKey("banner_accent_color_index")
         val BannerFontSizePresetKey = intPreferencesKey("banner_font_size_preset")
@@ -205,7 +205,7 @@ data class WidgetSettings(
             bannerMessages = prefs[BannerMessagesKey]?.let { parseBannerMessages(it) } ?: DEFAULT_BANNER_MESSAGES,
             bannerVibe = prefs[BannerVibeKey] ?: 0,
             bannerScrollSpeed = prefs[BannerScrollSpeedKey] ?: 5,
-            bannerScrollFromLeft = prefs[BannerScrollFromLeftKey] ?: false,
+            bannerScrollDirection = prefs[BannerScrollDirectionKey] ?: 0,
             bannerGapSeconds = prefs[BannerGapSecondsKey] ?: 1,
             bannerAccentColorIndex = prefs[BannerAccentColorIndexKey] ?: 0,
             bannerFontSizePreset = prefs[BannerFontSizePresetKey] ?: 1,
@@ -242,7 +242,7 @@ data class WidgetSettings(
             prefs[BannerMessagesKey] = serializeBannerMessages(settings.bannerMessages)
             prefs[BannerVibeKey] = settings.bannerVibe
             prefs[BannerScrollSpeedKey] = settings.bannerScrollSpeed
-            prefs[BannerScrollFromLeftKey] = settings.bannerScrollFromLeft
+            prefs[BannerScrollDirectionKey] = settings.bannerScrollDirection
             prefs[BannerGapSecondsKey] = settings.bannerGapSeconds
             prefs[BannerAccentColorIndexKey] = settings.bannerAccentColorIndex
             prefs[BannerFontSizePresetKey] = settings.bannerFontSizePreset

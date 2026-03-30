@@ -26,7 +26,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
@@ -36,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import dk.codella.vantadot.banner.data.BannerScrollDirection
 import dk.codella.vantadot.banner.data.BannerVibe
 import dk.codella.vantadot.settings.BannerMessageEntry
 import dk.codella.vantadot.settings.FontSizePreset
@@ -54,7 +54,7 @@ fun BannerSettingsScreen(
     val messages = remember { initialSettings.bannerMessages.toMutableStateList() }
     var vibe by remember { mutableIntStateOf(initialSettings.bannerVibe) }
     var scrollSpeed by remember { mutableIntStateOf(initialSettings.bannerScrollSpeed) }
-    var scrollFromLeft by remember { mutableStateOf(initialSettings.bannerScrollFromLeft) }
+    var scrollDirection by remember { mutableIntStateOf(initialSettings.bannerScrollDirection) }
     var gapSeconds by remember { mutableIntStateOf(initialSettings.bannerGapSeconds) }
     var accentIndex by remember { mutableIntStateOf(initialSettings.bannerAccentColorIndex) }
     var fontSizePreset by remember { mutableIntStateOf(initialSettings.bannerFontSizePreset) }
@@ -63,7 +63,7 @@ fun BannerSettingsScreen(
         bannerMessages = messages.toList(),
         bannerVibe = vibe,
         bannerScrollSpeed = scrollSpeed,
-        bannerScrollFromLeft = scrollFromLeft,
+        bannerScrollDirection = scrollDirection,
         bannerGapSeconds = gapSeconds,
         bannerAccentColorIndex = accentIndex,
         bannerFontSizePreset = fontSizePreset,
@@ -119,7 +119,7 @@ fun BannerSettingsScreen(
             if (messages.size < 10) {
                 item {
                     TextButton(onClick = {
-                        messages.add(BannerMessageEntry("MESSAGE ${messages.size + 1}"))
+                        messages.add(BannerMessageEntry(""))
                         save()
                     }) {
                         Text(
@@ -163,9 +163,14 @@ fun BannerSettingsScreen(
                 )
             }
 
+            item { SectionLabel("DIRECTION") }
+
             item {
-                SettingToggle("START FROM LEFT", scrollFromLeft) {
-                    scrollFromLeft = it; save()
+                SegmentedSelector(
+                    options = BannerScrollDirection.entries.map { it.displayName },
+                    selectedIndex = scrollDirection,
+                ) {
+                    scrollDirection = it; save()
                 }
             }
 
