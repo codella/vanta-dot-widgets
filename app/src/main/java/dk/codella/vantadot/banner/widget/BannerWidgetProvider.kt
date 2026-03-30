@@ -261,7 +261,7 @@ object BannerAnimator {
                         tick(ctx)
                     } catch (e: CancellationException) {
                         throw e
-                    } catch (_: Exception) {}
+                    } catch (_: Throwable) {}
                     delay(TICK_MS)
                 } else {
                     delay(1000)
