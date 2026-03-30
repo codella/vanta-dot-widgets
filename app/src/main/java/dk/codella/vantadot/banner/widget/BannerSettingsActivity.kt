@@ -9,27 +9,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.state.getAppWidgetState
-import androidx.glance.appwidget.state.updateAppWidgetState
-import androidx.glance.state.PreferencesGlanceStateDefinition
+import dk.codella.vantadot.settings.BannerMessageEntry
 import dk.codella.vantadot.settings.WidgetSettings
 import dk.codella.vantadot.ui.screens.BannerSettingsScreen
 import dk.codella.vantadot.ui.theme.VantaDotTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 class BannerSettingsActivity : ComponentActivity() {
 
     private var appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
     private var initialSettings by mutableStateOf(WidgetSettings())
     private var settingsLoaded by mutableStateOf(false)
-    private val updateScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var saveJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,15 +33,18 @@ class BannerSettingsActivity : ComponentActivity() {
             setResult(RESULT_OK, Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId))
         }
 
-        updateScope.launch {
-            if (appWidgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                val manager = GlanceAppWidgetManager(applicationContext)
-                val glanceId = manager.getGlanceIdBy(appWidgetId)
-                val prefs = getAppWidgetState(applicationContext, PreferencesGlanceStateDefinition, glanceId)
-                initialSettings = WidgetSettings.fromPreferences(prefs)
-            }
-            settingsLoaded = true
-        }
+        // Load from SharedPreferences
+        val bannerSettings = BannerPrefs.load(applicationContext, appWidgetId)
+        initialSettings = WidgetSettings(
+            bannerMessages = bannerSettings.messages.map { BannerMessageEntry(it) },
+            bannerVibe = bannerSettings.vibe,
+            bannerScrollSpeed = bannerSettings.scrollSpeed,
+            bannerScrollDirection = bannerSettings.scrollDirection,
+            bannerGapSeconds = bannerSettings.gapSeconds,
+            bannerAccentColorIndex = bannerSettings.accentColorIndex,
+            bannerFontSizePreset = bannerSettings.fontSizePreset,
+        )
+        settingsLoaded = true
 
         setContent {
             VantaDotTheme {
@@ -69,21 +61,17 @@ class BannerSettingsActivity : ComponentActivity() {
 
     private fun saveSettings(settings: WidgetSettings) {
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
-        saveJob?.cancel()
-        val context = applicationContext
-        saveJob = updateScope.launch {
-            delay(80)
-            val manager = GlanceAppWidgetManager(context)
-            val glanceId = manager.getGlanceIdBy(appWidgetId)
-            updateAppWidgetState(context, glanceId) { prefs ->
-                WidgetSettings.writeTo(prefs, settings)
-                // Reset scroll state so new direction/speed takes effect immediately
-                prefs.remove(BannerScrollTickHandler.CurrentLtrKey)
-                prefs.remove(BannerScrollTickHandler.ScrollOffsetKey)
-                prefs.remove(BannerScrollTickHandler.GapUntilKey)
-            }
-            BannerWidget().update(context, glanceId)
-            BannerScrollTickHandler.startIfNotRunning(context)
-        }
+        val bannerSettings = BannerSettings(
+            messages = settings.bannerMessages.map { it.text },
+            vibe = settings.bannerVibe,
+            scrollSpeed = settings.bannerScrollSpeed,
+            scrollDirection = settings.bannerScrollDirection,
+            gapSeconds = settings.bannerGapSeconds,
+            accentColorIndex = settings.bannerAccentColorIndex,
+            fontSizePreset = settings.bannerFontSizePreset,
+        )
+        BannerPrefs.save(applicationContext, appWidgetId, bannerSettings)
+        BannerAnimator.resetState(appWidgetId)
+        BannerAnimator.startIfNotRunning(applicationContext)
     }
 }

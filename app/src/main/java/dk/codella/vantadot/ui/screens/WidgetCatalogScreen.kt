@@ -15,7 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dk.codella.vantadot.banner.widget.BannerWidgetReceiver
+import dk.codella.vantadot.banner.widget.BannerWidgetProvider
 import dk.codella.vantadot.calendar.widget.CalendarWidgetReceiver
 import dk.codella.vantadot.binaryclock.widget.BinaryClockWidgetReceiver
 import dk.codella.vantadot.metronome.widget.MetronomeWidgetReceiver
@@ -91,7 +91,7 @@ fun WidgetCatalogScreen(
                     widgetDescription = "Scrolling dot-matrix marquee banner",
                     hasPermission = true,
                     onRequestPermission = {},
-                    receiverClass = BannerWidgetReceiver::class.java,
+                    receiverClass = BannerWidgetProvider::class.java,
                 )
             }
         }

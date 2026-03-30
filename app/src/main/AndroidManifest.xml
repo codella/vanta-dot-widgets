@@ -107,10 +107,11 @@
             android:theme="@style/Theme.VantaDot" />
 
         <receiver
-            android:name=".banner.widget.BannerWidgetReceiver"
+            android:name=".banner.widget.BannerWidgetProvider"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="dk.codella.vantadot.BANNER_TAP" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

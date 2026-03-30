@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:initialLayout="@layout/glance_default_loading_layout"
+    android:initialLayout="@layout/banner_widget_layout"
     android:minWidth="120dp"
     android:minHeight="55dp"
     android:minResizeWidth="120dp"
@@ -10,7 +10,7 @@
     android:targetCellWidth="2"
     android:targetCellHeight="1"
     android:resizeMode="horizontal"
-    android:updatePeriodMillis="0"
+    android:updatePeriodMillis="1800000"
     android:description="@string/banner_widget_description"
     android:widgetCategory="home_screen"
     android:configure="dk.codella.vantadot.banner.widget.BannerSettingsActivity"

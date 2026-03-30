@@ -1,6 +1,7 @@
 package dk.codella.vantadot
 
 import android.app.Application
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.getAppWidgetState
@@ -9,9 +10,8 @@ import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import dk.codella.vantadot.banner.widget.BannerScrollTickHandler
-import dk.codella.vantadot.banner.widget.BannerScreenReceiver
-import dk.codella.vantadot.banner.widget.BannerWidget
+import dk.codella.vantadot.banner.widget.BannerAnimator
+import dk.codella.vantadot.banner.widget.BannerWidgetProvider
 import dk.codella.vantadot.binaryclock.widget.BinaryClockSecondTickHandler
 import dk.codella.vantadot.binaryclock.widget.BinaryClockWidget
 import dk.codella.vantadot.binaryclock.widget.ClockMinuteTickReceiver
@@ -54,14 +54,12 @@ class VantaDotApp : Application() {
         }
 
         fun recoverBannerTick(context: Context) {
-            CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
-                try {
-                    val manager = GlanceAppWidgetManager(context)
-                    val ids = manager.getGlanceIds(BannerWidget::class.java)
-                    if (ids.isEmpty()) return@launch
-                    BannerScreenReceiver.register(context)
-                    BannerScrollTickHandler.startIfNotRunning(context)
-                } catch (_: Exception) {}
+            val manager = AppWidgetManager.getInstance(context)
+            val ids = manager.getAppWidgetIds(
+                android.content.ComponentName(context, BannerWidgetProvider::class.java)
+            )
+            if (ids.isNotEmpty()) {
+                BannerAnimator.startIfNotRunning(context)
             }
         }
 
