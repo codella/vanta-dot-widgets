@@ -13,6 +13,8 @@ data class TimerPreset(val name: String, val seconds: Int)
 
 data class MetronomePreset(val name: String, val bpm: Int)
 
+data class BannerMessageEntry(val text: String)
+
 data class WidgetSettings(
     val showSectionHeader: Boolean = true,
     val showAllDayEvents: Boolean = true,
@@ -44,6 +46,14 @@ data class WidgetSettings(
     val binaryClockDotShape: Int = 1,
     val binaryClockAccentColorIndex: Int = 6,
     val binaryClockFontSizePreset: Int = 0,
+    // Banner settings
+    val bannerMessages: List<BannerMessageEntry> = DEFAULT_BANNER_MESSAGES,
+    val bannerVibe: Int = 0,
+    val bannerScrollSpeed: Int = 5,
+    val bannerScrollFromLeft: Boolean = false,
+    val bannerGapSeconds: Int = 1,
+    val bannerAccentColorIndex: Int = 0,
+    val bannerFontSizePreset: Int = 1,
 ) {
     companion object {
         const val DEFAULT_MAX_EVENTS = 20
@@ -57,6 +67,10 @@ data class WidgetSettings(
             MetronomePreset("Adagio", 72),
             MetronomePreset("Moderato", 108),
             MetronomePreset("Allegro", 132),
+        )
+
+        val DEFAULT_BANNER_MESSAGES = listOf(
+            BannerMessageEntry("EDIT ME IN WIDGET SETTINGS"),
         )
 
         val ShowSectionHeaderKey = booleanPreferencesKey("show_section_header")
@@ -86,6 +100,13 @@ data class WidgetSettings(
         val BinaryClockDotShapeKey = intPreferencesKey("binary_clock_dot_shape")
         val BinaryClockAccentColorIndexKey = intPreferencesKey("binary_clock_accent_color_index")
         val BinaryClockFontSizePresetKey = intPreferencesKey("binary_clock_font_size_preset")
+        val BannerMessagesKey = stringPreferencesKey("banner_messages_json")
+        val BannerVibeKey = intPreferencesKey("banner_vibe")
+        val BannerScrollSpeedKey = intPreferencesKey("banner_scroll_speed")
+        val BannerScrollFromLeftKey = booleanPreferencesKey("banner_scroll_from_left")
+        val BannerGapSecondsKey = intPreferencesKey("banner_gap_seconds")
+        val BannerAccentColorIndexKey = intPreferencesKey("banner_accent_color_index")
+        val BannerFontSizePresetKey = intPreferencesKey("banner_font_size_preset")
 
         private fun parsePresets(json: String): List<TimerPreset> {
             return try {
@@ -107,6 +128,23 @@ data class WidgetSettings(
                     put("seconds", p.seconds)
                 })
             }
+            return arr.toString()
+        }
+
+        private fun parseBannerMessages(json: String): List<BannerMessageEntry> {
+            return try {
+                val arr = JSONArray(json)
+                (0 until arr.length()).map { i ->
+                    BannerMessageEntry(arr.getString(i))
+                }
+            } catch (_: Exception) {
+                DEFAULT_BANNER_MESSAGES
+            }
+        }
+
+        private fun serializeBannerMessages(messages: List<BannerMessageEntry>): String {
+            val arr = JSONArray()
+            messages.forEach { arr.put(it.text) }
             return arr.toString()
         }
 
@@ -164,6 +202,13 @@ data class WidgetSettings(
             binaryClockDotShape = prefs[BinaryClockDotShapeKey] ?: 1,
             binaryClockAccentColorIndex = prefs[BinaryClockAccentColorIndexKey] ?: 6,
             binaryClockFontSizePreset = prefs[BinaryClockFontSizePresetKey] ?: 0,
+            bannerMessages = prefs[BannerMessagesKey]?.let { parseBannerMessages(it) } ?: DEFAULT_BANNER_MESSAGES,
+            bannerVibe = prefs[BannerVibeKey] ?: 0,
+            bannerScrollSpeed = prefs[BannerScrollSpeedKey] ?: 5,
+            bannerScrollFromLeft = prefs[BannerScrollFromLeftKey] ?: false,
+            bannerGapSeconds = prefs[BannerGapSecondsKey] ?: 1,
+            bannerAccentColorIndex = prefs[BannerAccentColorIndexKey] ?: 0,
+            bannerFontSizePreset = prefs[BannerFontSizePresetKey] ?: 1,
         )
 
         fun writeTo(prefs: MutablePreferences, settings: WidgetSettings) {
@@ -194,6 +239,13 @@ data class WidgetSettings(
             prefs[BinaryClockDotShapeKey] = settings.binaryClockDotShape
             prefs[BinaryClockAccentColorIndexKey] = settings.binaryClockAccentColorIndex
             prefs[BinaryClockFontSizePresetKey] = settings.binaryClockFontSizePreset
+            prefs[BannerMessagesKey] = serializeBannerMessages(settings.bannerMessages)
+            prefs[BannerVibeKey] = settings.bannerVibe
+            prefs[BannerScrollSpeedKey] = settings.bannerScrollSpeed
+            prefs[BannerScrollFromLeftKey] = settings.bannerScrollFromLeft
+            prefs[BannerGapSecondsKey] = settings.bannerGapSeconds
+            prefs[BannerAccentColorIndexKey] = settings.bannerAccentColorIndex
+            prefs[BannerFontSizePresetKey] = settings.bannerFontSizePreset
         }
     }
 }

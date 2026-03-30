@@ -15,4 +15,6 @@
     <string name="metronome_widget_description">Practice metronome with BPM presets</string>
     <string name="binary_clock_widget_name">Binary Clock</string>
     <string name="binary_clock_widget_description">BCD binary clock with dot grid display</string>
+    <string name="banner_widget_name">Banner</string>
+    <string name="banner_widget_description">Scrolling dot-matrix marquee banner</string>
 </resources>

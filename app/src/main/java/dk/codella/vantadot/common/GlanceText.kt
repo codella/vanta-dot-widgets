@@ -314,6 +314,56 @@ object GlanceText {
         return bitmap
     }
 
+    fun renderMarqueeFrame(
+        context: Context,
+        text: String,
+        viewportWidthDp: Float,
+        viewportHeightDp: Float,
+        scrollOffset: Int,
+        textSizeSp: Float = 24f,
+        color: Int = android.graphics.Color.WHITE,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val scaledDensity = context.resources.displayMetrics.scaledDensity
+        val textSizePx = textSizeSp * scaledDensity
+        val viewportWidthPx = (viewportWidthDp * density).roundToInt().coerceAtLeast(1)
+        val viewportHeightPx = (viewportHeightDp * density).roundToInt().coerceAtLeast(1)
+
+        val typeface = ResourcesCompat.getFont(context, R.font.doto) ?: Typeface.MONOSPACE
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            this.textSize = textSizePx
+            this.color = color
+        }
+
+        val fullTextWidth = textPaint.measureText(text).roundToInt().coerceAtLeast(1)
+        val metrics = textPaint.fontMetrics
+        val textHeight = (metrics.bottom - metrics.top).roundToInt()
+
+        val bitmap = Bitmap.createBitmap(viewportWidthPx, viewportHeightPx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        val y = (viewportHeightPx - textHeight) / 2f - metrics.top
+        canvas.drawText(text, -scrollOffset.toFloat(), y, textPaint)
+
+        return bitmap
+    }
+
+    fun measureTextWidth(
+        context: Context,
+        text: String,
+        textSizeSp: Float = 24f,
+    ): Int {
+        val scaledDensity = context.resources.displayMetrics.scaledDensity
+        val textSizePx = textSizeSp * scaledDensity
+        val typeface = ResourcesCompat.getFont(context, R.font.doto) ?: Typeface.MONOSPACE
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.typeface = typeface
+            this.textSize = textSizePx
+        }
+        return textPaint.measureText(text).roundToInt()
+    }
+
     fun renderDotoText(
         context: Context,
         text: String,

@@ -38,5 +38,10 @@
 -keep class dk.codella.vantadot.binaryclock.widget.BinaryClockWidgetReceiver { *; }
 -keep class dk.codella.vantadot.binaryclock.widget.BinaryClockSettingsActivity { *; }
 
+# Banner widget
+-keep class dk.codella.vantadot.banner.widget.BannerWidgetReceiver { *; }
+-keep class dk.codella.vantadot.banner.widget.BannerSettingsActivity { *; }
+-keep class dk.codella.vantadot.banner.widget.TapActionCallback { *; }
+
 # Keep Glance internals
 -keep class androidx.glance.** { *; }

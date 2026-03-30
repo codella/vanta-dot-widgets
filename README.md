@@ -55,6 +55,22 @@ A BCD (Binary-Coded Decimal) clock displaying the current time as a dot grid:
 - **Show seconds** — optional seconds columns with 1-second refresh rate
 - **Per-widget settings** — each instance has independent accent color, font size, dot shape, and display toggles
 
+## Banner Widget
+
+A scrolling dot-matrix marquee banner for custom messages:
+
+- **2×1** — one cell tall, two cells wide minimum, horizontally resizable
+
+### Features
+
+- **Scrolling marquee** — continuous horizontal text scroll using the Doto dot-matrix font
+- **Three vibes** — Scroll (continuous left marquee), Bounce (ping-pong), Typewriter (character-by-character reveal)
+- **Multiple messages** — configure up to 10 messages that rotate automatically after each animation cycle
+- **Configurable gap** — blank pause between messages, adjustable from 1 to 10 seconds
+- **Tap to pause/resume** — tap the widget to pause or resume the scroll
+- **Configurable speed** — slow, medium, or fast scroll speed
+- **Per-widget settings** — each instance has independent messages, vibe, speed, gap, accent color, and font size
+
 ## Requirements
 
 - Android 13+ (API 33)
@@ -81,7 +97,7 @@ If you're not using mise, set `JAVA_HOME` to any JDK 17 installation before runn
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
 
-After installing, long-press on your home screen, tap "Widgets", and find **Vanta Dot** widgets (Calendar, Timer, Metronome, Binary Clock). The companion app lets you preview widgets, pin them, and grant permissions.
+After installing, long-press on your home screen, tap "Widgets", and find **Vanta Dot** widgets (Calendar, Timer, Metronome, Binary Clock, Banner). The companion app lets you preview widgets, pin them, and grant permissions.
 
 ## Project Structure
 
@@ -130,6 +146,17 @@ app/src/main/java/dk/codella/vantadot/
 │   │   └── MetronomeActionCallbacks.kt Play/stop, BPM adjust, preset cycle
 │   └── service/
 │       └── MetronomeService.kt        Foreground service with SoundPool beat loop
+├── banner/
+│   ├── data/
+│   │   ├── BannerVibe.kt             Animation style enum (Scroll, Bounce, Typewriter)
+│   │   └── BannerMessage.kt          Message data class
+│   └── widget/
+│       ├── BannerWidget.kt               Glance widget (SizeMode.Exact)
+│       ├── BannerWidgetReceiver.kt       BroadcastReceiver + scroll tick handler
+│       ├── BannerWidgetContent.kt        Marquee frame composable
+│       ├── BannerWidgetSizes.kt          Size constants
+│       ├── BannerSettingsActivity.kt     Widget configuration activity
+│       └── BannerActionCallbacks.kt      Tap pause/resume
 ├── binaryclock/
 │   ├── data/
 │   │   └── BinaryClockDotShape.kt     Dot shape enum (Circle, Square)

@@ -101,6 +101,22 @@
                 android:resource="@xml/binary_clock_widget_info" />
         </receiver>
 
+        <activity
+            android:name=".banner.widget.BannerSettingsActivity"
+            android:exported="true"
+            android:theme="@style/Theme.VantaDot" />
+
+        <receiver
+            android:name=".banner.widget.BannerWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/banner_widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>
