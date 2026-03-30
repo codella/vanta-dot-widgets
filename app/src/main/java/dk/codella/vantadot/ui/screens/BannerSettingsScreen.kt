@@ -36,7 +36,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import dk.codella.vantadot.banner.data.BannerScrollDirection
-import dk.codella.vantadot.banner.data.BannerVibe
 import dk.codella.vantadot.settings.BannerMessageEntry
 import dk.codella.vantadot.settings.FontSizePreset
 import dk.codella.vantadot.settings.WidgetSettings
@@ -52,7 +51,6 @@ fun BannerSettingsScreen(
     onSettingsChanged: (WidgetSettings) -> Unit,
 ) {
     val messages = remember { initialSettings.bannerMessages.toMutableStateList() }
-    var vibe by remember { mutableIntStateOf(initialSettings.bannerVibe) }
     var scrollSpeed by remember { mutableIntStateOf(initialSettings.bannerScrollSpeed) }
     var scrollDirection by remember { mutableIntStateOf(initialSettings.bannerScrollDirection) }
     var gapSeconds by remember { mutableIntStateOf(initialSettings.bannerGapSeconds) }
@@ -61,7 +59,6 @@ fun BannerSettingsScreen(
 
     fun currentSettings() = initialSettings.copy(
         bannerMessages = messages.toList(),
-        bannerVibe = vibe,
         bannerScrollSpeed = scrollSpeed,
         bannerScrollDirection = scrollDirection,
         bannerGapSeconds = gapSeconds,
@@ -128,19 +125,6 @@ fun BannerSettingsScreen(
                             color = VantaDotGreyLight,
                         )
                     }
-                }
-            }
-
-            item { Spacer(modifier = Modifier.height(12.dp)) }
-
-            item { SectionLabel("VIBE") }
-
-            item {
-                SegmentedSelector(
-                    options = BannerVibe.entries.map { it.displayName },
-                    selectedIndex = vibe,
-                ) {
-                    vibe = it; save()
                 }
             }
 

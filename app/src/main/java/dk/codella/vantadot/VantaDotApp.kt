@@ -60,6 +60,7 @@ class VantaDotApp : Application() {
             )
             if (ids.isNotEmpty()) {
                 BannerAnimator.startIfNotRunning(context)
+                BannerWidgetProvider.scheduleKeepalive(context)
             }
         }
 

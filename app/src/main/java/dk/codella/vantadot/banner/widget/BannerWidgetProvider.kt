@@ -1,5 +1,6 @@
 package dk.codella.vantadot.banner.widget
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
@@ -7,6 +8,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
+import android.os.SystemClock
 import android.widget.RemoteViews
 import dk.codella.vantadot.R
 import dk.codella.vantadot.banner.data.BannerScrollDirection
@@ -30,55 +32,75 @@ class BannerWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray,
     ) {
         for (id in appWidgetIds) {
-            pushFrame(context, appWidgetManager, id)
+            setupWidget(context, appWidgetManager, id)
         }
+        BannerAnimator.startIfNotRunning(context)
+        scheduleKeepalive(context)
+    }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: android.os.Bundle,
+    ) {
+        setupWidget(context, appWidgetManager, appWidgetId)
         BannerAnimator.startIfNotRunning(context)
     }
 
     override fun onDisabled(context: Context) {
         BannerAnimator.stop()
+        cancelKeepalive(context)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == ACTION_TAP) {
-            val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
-            if (id != -1) BannerAnimator.togglePause(id)
-            return
+        when (intent.action) {
+            ACTION_TAP -> {
+                val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
+                if (id != -1) BannerAnimator.togglePause(id)
+                return
+            }
+            ACTION_KEEPALIVE -> {
+                BannerAnimator.startIfNotRunning(context)
+                return
+            }
         }
         super.onReceive(context, intent)
     }
 
     companion object {
         const val ACTION_TAP = "dk.codella.vantadot.BANNER_TAP"
+        const val ACTION_KEEPALIVE = "dk.codella.vantadot.BANNER_KEEPALIVE"
+        private const val KEEPALIVE_INTERVAL_MS = 60_000L
 
-        fun pushFrame(context: Context, manager: AppWidgetManager, appWidgetId: Int) {
-            val state = BannerAnimator.getState(appWidgetId)
-            val settings = BannerPrefs.load(context, appWidgetId)
-            val fontScale = FontSizePreset.fromIndex(settings.fontSizePreset).scaleFactor
-            val accent = AccentColorPreset.fromIndex(settings.accentColorIndex)
-            val textSizeSp = 18f * fontScale
-
-            val options = manager.getAppWidgetOptions(appWidgetId)
-            val widthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 120)
-            val heightDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 55)
-            val paddingDp = 12f
-            val viewportW = (widthDp - 2 * paddingDp).coerceAtLeast(1f)
-            val viewportH = (heightDp - 2 * paddingDp).coerceAtLeast(1f)
-
-            val message = state.currentMessage(settings)
-
-            val bitmap = if (state.inGap) {
-                // Blank frame during gap
-                GlanceText.renderMarqueeFrame(
-                    context, "", viewportW, viewportH, 0, textSizeSp,
-                    accent.swatchColor.toArgb(),
-                )
-            } else {
-                GlanceText.renderMarqueeFrame(
-                    context, message, viewportW, viewportH, state.offset, textSizeSp,
-                    accent.swatchColor.toArgb(),
-                )
+        private fun keepalivePendingIntent(context: Context): PendingIntent {
+            val intent = Intent(context, BannerWidgetProvider::class.java).apply {
+                action = ACTION_KEEPALIVE
             }
+            return PendingIntent.getBroadcast(
+                context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        }
+
+        fun scheduleKeepalive(context: Context) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + KEEPALIVE_INTERVAL_MS,
+                KEEPALIVE_INTERVAL_MS,
+                keepalivePendingIntent(context),
+            )
+        }
+
+        private fun cancelKeepalive(context: Context) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager.cancel(keepalivePendingIntent(context))
+        }
+
+        /** Full update — sets layout, click handler, and bitmap. Used on setup/resize. */
+        fun setupWidget(context: Context, manager: AppWidgetManager, appWidgetId: Int) {
+            val bitmap = renderBitmap(context, manager, appWidgetId)
 
             val views = RemoteViews(context.packageName, R.layout.banner_widget_layout)
             views.setImageViewBitmap(R.id.banner_image, bitmap)
@@ -94,6 +116,41 @@ class BannerWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.banner_root, tapPending)
 
             manager.updateAppWidget(appWidgetId, views)
+        }
+
+        /** Lightweight partial update — just the bitmap. Used for animation frames. */
+        fun pushBitmap(context: Context, manager: AppWidgetManager, appWidgetId: Int) {
+            val bitmap = renderBitmap(context, manager, appWidgetId)
+            val views = RemoteViews(context.packageName, R.layout.banner_widget_layout)
+            views.setImageViewBitmap(R.id.banner_image, bitmap)
+            manager.partiallyUpdateAppWidget(appWidgetId, views)
+        }
+
+        private fun renderBitmap(
+            context: Context,
+            manager: AppWidgetManager,
+            appWidgetId: Int,
+        ): android.graphics.Bitmap {
+            val state = BannerAnimator.getState(appWidgetId)
+            val settings = BannerPrefs.load(context, appWidgetId)
+            val fontScale = FontSizePreset.fromIndex(settings.fontSizePreset).scaleFactor
+            val accent = AccentColorPreset.fromIndex(settings.accentColorIndex)
+            val textSizeSp = 18f * fontScale
+
+            val options = manager.getAppWidgetOptions(appWidgetId)
+            val widthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 120)
+            val heightDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 55)
+            val paddingDp = 12f
+            val viewportW = (widthDp - 2 * paddingDp).coerceAtLeast(1f)
+            val viewportH = (heightDp - 2 * paddingDp).coerceAtLeast(1f)
+
+            val message = state.currentMessage(settings)
+            val text = if (state.inGap) "" else message
+
+            return GlanceText.renderMarqueeFrame(
+                context, text, viewportW, viewportH, state.offset, textSizeSp,
+                accent.swatchColor.toArgb(),
+            )
         }
 
         private fun androidx.compose.ui.graphics.Color.toArgb(): Int {
@@ -228,6 +285,18 @@ object BannerAnimator {
         return (s * s / 3 + 1) * 25f
     }
 
+    private fun getViewportWidthPx(context: Context, manager: AppWidgetManager, appWidgetId: Int): Int {
+        val density = context.resources.displayMetrics.density
+        val widthDp = manager.getAppWidgetOptions(appWidgetId)
+            .getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 120)
+        return ((widthDp - 24f) * density).toInt().coerceAtLeast(1)
+    }
+
+    private fun getTextWidthPx(context: Context, settings: BannerSettings, text: String): Int {
+        val fontScale = FontSizePreset.fromIndex(settings.fontSizePreset).scaleFactor
+        return GlanceText.measureTextWidth(context, text, 18f * fontScale)
+    }
+
     private fun tick(context: Context) {
         val manager = AppWidgetManager.getInstance(context)
         val component = ComponentName(context, BannerWidgetProvider::class.java)
@@ -237,71 +306,53 @@ object BannerAnimator {
         for (appWidgetId in widgetIds) {
             val settings = BannerPrefs.load(context, appWidgetId)
             val state = getState(appWidgetId)
+            val viewportWidthPx = getViewportWidthPx(context, manager, appWidgetId)
+            val msg = state.currentMessage(settings)
+            val textWidthPx = getTextWidthPx(context, settings, msg)
 
+            // Initialize
             if (!state.initialized) {
                 state.initialized = true
                 state.ltr = resolveInitialLtr(settings.scrollDirection)
-                val fontScale = FontSizePreset.fromIndex(settings.fontSizePreset).scaleFactor
-                val textSizeSp = 18f * fontScale
-                val msg = state.currentMessage(settings)
-                val textWidthPx = GlanceText.measureTextWidth(context, msg, textSizeSp)
-                val options = manager.getAppWidgetOptions(appWidgetId)
-                val widthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 120)
-                val density = context.resources.displayMetrics.density
-                val viewportWidthPx = ((widthDp - 24f) * density).toInt().coerceAtLeast(1)
                 state.offset = if (state.ltr) textWidthPx else -viewportWidthPx
             }
 
             if (state.paused) {
-                BannerWidgetProvider.pushFrame(context, manager, appWidgetId)
+                BannerWidgetProvider.pushBitmap(context, manager, appWidgetId)
                 continue
             }
 
+            // In gap
             if (state.inGap) {
                 if (System.currentTimeMillis() >= state.gapEndMs) {
                     state.inGap = false
-                    // Advance message
                     val msgs = settings.messages.ifEmpty { listOf("EDIT ME IN WIDGET SETTINGS") }
                     state.messageIndex = (state.messageIndex + 1) % msgs.size
-                    // Resolve next direction
                     state.ltr = resolveNextLtr(settings.scrollDirection, state.ltr)
-                    // Set start offset for new message
-                    val fontScale = FontSizePreset.fromIndex(settings.fontSizePreset).scaleFactor
-                    val textSizeSp = 18f * fontScale
-                    val msg = state.currentMessage(settings)
-                    val textWidthPx = GlanceText.measureTextWidth(context, msg, textSizeSp)
-                    val options = manager.getAppWidgetOptions(appWidgetId)
-                    val widthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 120)
-                    val density = context.resources.displayMetrics.density
-                    val viewportWidthPx = ((widthDp - 24f) * density).toInt().coerceAtLeast(1)
-                    state.offset = if (state.ltr) textWidthPx else -viewportWidthPx
+                    val nextMsg = state.currentMessage(settings)
+                    val nextTextWidthPx = getTextWidthPx(context, settings, nextMsg)
+                    state.offset = if (state.ltr) nextTextWidthPx else -viewportWidthPx
                 }
-                BannerWidgetProvider.pushFrame(context, manager, appWidgetId)
+                BannerWidgetProvider.pushBitmap(context, manager, appWidgetId)
                 continue
             }
 
-            // Advance scroll
+            // Advance
             val pxPerSec = speedPxPerSec(settings.scrollSpeed)
             val step = (TICK_MS * pxPerSec / 1000f).toInt().coerceAtLeast(1)
+
             state.offset += if (state.ltr) -step else step
-
-            // Check completion
-            val fontScale = FontSizePreset.fromIndex(settings.fontSizePreset).scaleFactor
-            val textSizeSp = 18f * fontScale
-            val msg = state.currentMessage(settings)
-            val textWidthPx = GlanceText.measureTextWidth(context, msg, textSizeSp)
-            val options = manager.getAppWidgetOptions(appWidgetId)
-            val widthDp = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 120)
-            val density = context.resources.displayMetrics.density
-            val viewportWidthPx = ((widthDp - 24f) * density).toInt().coerceAtLeast(1)
-
-            val completed = if (state.ltr) state.offset < -viewportWidthPx else state.offset > textWidthPx
+            val completed = if (state.ltr) {
+                state.offset < -viewportWidthPx
+            } else {
+                state.offset > textWidthPx
+            }
             if (completed) {
                 state.inGap = true
                 state.gapEndMs = System.currentTimeMillis() + settings.gapSeconds * 1000L
             }
 
-            BannerWidgetProvider.pushFrame(context, manager, appWidgetId)
+            BannerWidgetProvider.pushBitmap(context, manager, appWidgetId)
         }
     }
 
