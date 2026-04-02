@@ -44,7 +44,7 @@ class CalendarWidgetReceiver : GlanceAppWidgetReceiver() {
     }
 }
 
-private object MinuteTickReceiver : android.content.BroadcastReceiver() {
+internal object MinuteTickReceiver : android.content.BroadcastReceiver() {
     private var registered = false
     private var lastDate: Int = -1
 
