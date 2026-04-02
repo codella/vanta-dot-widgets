@@ -119,23 +119,31 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
         text = text.uppercase(),
         textSizeSp = 14f * fontScale,
     )
-    Row(
-        modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp).clickable(actionRunCallback<RefreshActionCallback>()),
-        verticalAlignment = Alignment.CenterVertically,
+    Box(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .clickable(actionRunCallback<RefreshActionCallback>()),
+        contentAlignment = Alignment.CenterStart,
     ) {
-        Image(
-            provider = ImageProvider(bitmap),
-            contentDescription = text,
-        )
-        if (isRefreshing) {
-            Spacer(modifier = GlanceModifier.defaultWeight())
+        Row(
+            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Image(
-                provider = ImageProvider(
-                    GlanceText.renderLoadingDots(context, activeIndex = refreshPhase)
-                ),
-                contentDescription = "Loading",
-                modifier = GlanceModifier.size(width = 20.dp, height = 8.dp),
+                provider = ImageProvider(bitmap),
+                contentDescription = text,
             )
+            if (isRefreshing) {
+                Spacer(modifier = GlanceModifier.defaultWeight())
+                Image(
+                    provider = ImageProvider(
+                        GlanceText.renderLoadingDots(context, activeIndex = refreshPhase)
+                    ),
+                    contentDescription = "Loading",
+                    modifier = GlanceModifier.size(width = 20.dp, height = 8.dp),
+                )
+            }
         }
     }
 }
