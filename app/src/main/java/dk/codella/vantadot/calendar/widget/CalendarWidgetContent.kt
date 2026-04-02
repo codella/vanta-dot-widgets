@@ -119,37 +119,33 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
         text = text.uppercase(),
         textSizeSp = 14f * fontScale,
     )
-    Box(
+    Row(
         modifier = GlanceModifier
             .fillMaxWidth()
             .height(48.dp)
+            .padding(horizontal = 10.dp)
             .clickable(actionRunCallback<RefreshActionCallback>()),
-        contentAlignment = Alignment.Center,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Image(
+            provider = ImageProvider(bitmap),
+            contentDescription = text,
+        )
+        Spacer(modifier = GlanceModifier.defaultWeight())
+        if (isRefreshing) {
             Image(
-                provider = ImageProvider(bitmap),
-                contentDescription = text,
+                provider = ImageProvider(
+                    GlanceText.renderLoadingDots(context, activeIndex = refreshPhase)
+                ),
+                contentDescription = "Loading",
+                modifier = GlanceModifier.size(width = 20.dp, height = 8.dp),
             )
-            Spacer(modifier = GlanceModifier.defaultWeight())
-            if (isRefreshing) {
-                Image(
-                    provider = ImageProvider(
-                        GlanceText.renderLoadingDots(context, activeIndex = refreshPhase)
-                    ),
-                    contentDescription = "Loading",
-                    modifier = GlanceModifier.size(width = 20.dp, height = 8.dp),
-                )
-            } else {
-                Image(
-                    provider = ImageProvider(R.drawable.ic_refresh),
-                    contentDescription = "Refresh",
-                    modifier = GlanceModifier.size(14.dp),
-                )
-            }
+        } else {
+            Image(
+                provider = ImageProvider(R.drawable.ic_refresh),
+                contentDescription = "Refresh",
+                modifier = GlanceModifier.size(18.dp),
+            )
         }
     }
 }

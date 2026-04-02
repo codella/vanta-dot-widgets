@@ -4,10 +4,14 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
+import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.updateAll
+import androidx.glance.state.PreferencesGlanceStateDefinition
+import dk.codella.vantadot.calendar.data.CalendarEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -88,16 +92,53 @@ internal object MinuteTickReceiver : android.content.BroadcastReceiver() {
                     else -> false
                 }
 
+                val manager = GlanceAppWidgetManager(context)
+                val ids = manager.getGlanceIds(CalendarWidget::class.java)
+
+                // Skip background updates while a user-triggered refresh is
+                // running — updateAll would race with RefreshActionCallback
+                // and overwrite the loading-dots animation.
+                if (isAnyWidgetRefreshing(context, ids)) {
+                    return@launch
+                }
+
                 if (needsRefresh) {
-                    val manager = GlanceAppWidgetManager(context)
-                    for (id in manager.getGlanceIds(CalendarWidget::class.java)) {
+                    for (id in ids) {
                         CalendarWidget.refreshEventsIntoState(context, id)
                     }
+                    CalendarWidget().updateAll(context)
+                } else if (hasEventsInUrgencyWindow(context, ids)) {
+                    CalendarWidget().updateAll(context)
                 }
-                CalendarWidget().updateAll(context)
             } finally {
                 result.finish()
             }
         }
+    }
+
+    private suspend fun isAnyWidgetRefreshing(
+        context: Context,
+        ids: List<GlanceId>,
+    ): Boolean {
+        for (id in ids) {
+            val prefs = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
+            if (prefs[CalendarWidget.IsRefreshingKey] == true) return true
+        }
+        return false
+    }
+
+    private suspend fun hasEventsInUrgencyWindow(
+        context: Context,
+        ids: List<GlanceId>,
+    ): Boolean {
+        val now = System.currentTimeMillis()
+        val windowEnd = now + 31 * 60_000L // 31 min to cover the NONE→SUBTLE transition
+        for (id in ids) {
+            val prefs = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
+            val events = CalendarEvent.fromJsonArray(prefs[CalendarWidget.CachedEventsKey] ?: "[]")
+            if (events.any { !it.isAllDay && it.beginTime in now..windowEnd }) return true
+            if (events.any { !it.isAllDay && it.beginTime < now && it.endTime > now }) return true
+        }
+        return false
     }
 }
