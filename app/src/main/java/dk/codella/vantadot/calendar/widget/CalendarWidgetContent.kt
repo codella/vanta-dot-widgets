@@ -124,7 +124,7 @@ private fun SectionHeader(text: String, isRefreshing: Boolean = false, refreshPh
             .fillMaxWidth()
             .height(48.dp)
             .clickable(actionRunCallback<RefreshActionCallback>()),
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = Alignment.Center,
     ) {
         Row(
             modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 10.dp),
