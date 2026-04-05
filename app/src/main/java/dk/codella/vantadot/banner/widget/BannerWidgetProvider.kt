@@ -236,7 +236,7 @@ object BannerAnimator {
     private var job: Job? = null
     private val states = mutableMapOf<Int, BannerScrollState>()
 
-    private const val TICK_MS = 40L // 25 FPS — fast and smooth, no DataStore writes
+    private const val TICK_MS = 80L // ~12 FPS — smooth enough for dot-matrix, less process pressure
 
     fun getState(appWidgetId: Int): BannerScrollState =
         states.getOrPut(appWidgetId) { BannerScrollState() }
