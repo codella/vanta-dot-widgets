@@ -2,8 +2,6 @@ package dk.codella.vantadot.calendar.worker
 
 import android.content.Context
 import android.provider.CalendarContract
-import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.updateAll
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
@@ -18,12 +16,7 @@ class CalendarContentChangeWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        val manager = GlanceAppWidgetManager(applicationContext)
-        val ids = manager.getGlanceIds(CalendarWidget::class.java)
-        ids.forEach { id ->
-            CalendarWidget.refreshEventsIntoState(applicationContext, id)
-        }
-        CalendarWidget().updateAll(applicationContext)
+        CalendarWidget.refreshAllAndUpdate(applicationContext)
 
         // Re-enqueue to keep listening for calendar changes
         enqueue(applicationContext)

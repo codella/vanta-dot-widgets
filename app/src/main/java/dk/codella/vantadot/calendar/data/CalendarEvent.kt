@@ -34,7 +34,7 @@ data class CalendarEvent(
 
     val hasAttachments: Boolean
         get() {
-            val text = listOfNotNull(description).joinToString(" ").lowercase()
+            val text = (description ?: "").lowercase()
             return ATTACHMENT_PATTERNS.any { it in text }
         }
 

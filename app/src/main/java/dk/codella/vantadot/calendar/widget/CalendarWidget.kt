@@ -10,10 +10,12 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.LocalSize
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
+import androidx.glance.appwidget.updateAll
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.LocalContext
 import androidx.glance.currentState
@@ -78,6 +80,14 @@ class CalendarWidget : GlanceAppWidget() {
         val RefreshPhaseKey = intPreferencesKey("refresh_phase")
         val CachedEventsKey = stringPreferencesKey("cached_events")
         val HasPermissionKey = booleanPreferencesKey("has_permission")
+
+        suspend fun refreshAllAndUpdate(context: Context) {
+            val manager = GlanceAppWidgetManager(context)
+            for (id in manager.getGlanceIds(CalendarWidget::class.java)) {
+                refreshEventsIntoState(context, id)
+            }
+            CalendarWidget().updateAll(context)
+        }
 
         suspend fun refreshEventsIntoState(context: Context, id: GlanceId, useStubOverride: Boolean? = null) {
             val useStub = if (useStubOverride != null) useStubOverride else {

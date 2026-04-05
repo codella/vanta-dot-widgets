@@ -440,19 +440,6 @@ private fun CalendarColorDot(color: Int, style: CircleStyle = CircleStyle.FILLED
     )
 }
 
-@Composable
-private fun DotSeparator(fontScale: Float = 1f) {
-    val context = LocalContext.current
-    Box(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Image(
-            provider = ImageProvider(
-                GlanceText.renderDotoText(context, "· · ·", 10f * fontScale, VantaDotWidgetTheme.GreyMediumArgb)
-            ),
-            contentDescription = null,
-        )
-    }
-}
-
 private fun formatEventTime(event: CalendarEvent, use24HourFormat: Boolean = true, showCompactTime: Boolean = false): String {
     if (event.isAllDay) return "All day"
     val pattern = if (use24HourFormat) "HH:mm" else "h:mma"

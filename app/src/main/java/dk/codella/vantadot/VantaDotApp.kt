@@ -4,7 +4,6 @@ import android.app.Application
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.updateAll
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.work.Constraints
@@ -61,13 +60,9 @@ class VantaDotApp : Application() {
             CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
                 try {
                     val manager = GlanceAppWidgetManager(context)
-                    val ids = manager.getGlanceIds(CalendarWidget::class.java)
-                    if (ids.isEmpty()) return@launch
+                    if (manager.getGlanceIds(CalendarWidget::class.java).isEmpty()) return@launch
                     MinuteTickReceiver.register(context)
-                    for (id in ids) {
-                        CalendarWidget.refreshEventsIntoState(context, id)
-                    }
-                    CalendarWidget().updateAll(context)
+                    CalendarWidget.refreshAllAndUpdate(context)
                 } catch (_: Exception) {}
             }
         }

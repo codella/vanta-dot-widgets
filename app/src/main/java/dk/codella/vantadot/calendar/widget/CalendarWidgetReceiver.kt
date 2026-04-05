@@ -31,11 +31,7 @@ class CalendarWidgetReceiver : GlanceAppWidgetReceiver() {
         val result = goAsync()
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             try {
-                val manager = GlanceAppWidgetManager(context)
-                for (id in manager.getGlanceIds(CalendarWidget::class.java)) {
-                    CalendarWidget.refreshEventsIntoState(context, id)
-                }
-                CalendarWidget().updateAll(context)
+                CalendarWidget.refreshAllAndUpdate(context)
             } finally {
                 result.finish()
             }
