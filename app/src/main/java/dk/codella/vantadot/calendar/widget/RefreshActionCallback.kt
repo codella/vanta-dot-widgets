@@ -13,21 +13,26 @@ class RefreshActionCallback : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters,
     ) {
-        for (phase in 0..2) {
+        try {
+            for (phase in 0..2) {
+                updateAppWidgetState(context, glanceId) { prefs ->
+                    prefs[CalendarWidget.IsRefreshingKey] = true
+                    prefs[CalendarWidget.RefreshStartedAtKey] = System.currentTimeMillis()
+                    prefs[CalendarWidget.RefreshPhaseKey] = phase
+                }
+                CalendarWidget().update(context, glanceId)
+                delay(300)
+            }
+
+            CalendarWidget.refreshEventsIntoState(context, glanceId)
+        } finally {
+            // Always clear refreshing state — a stuck flag would block
+            // minute-tick updates and permanently brick the widget.
             updateAppWidgetState(context, glanceId) { prefs ->
-                prefs[CalendarWidget.IsRefreshingKey] = true
-                prefs[CalendarWidget.RefreshPhaseKey] = phase
+                prefs[CalendarWidget.IsRefreshingKey] = false
+                prefs[CalendarWidget.RefreshPhaseKey] = 0
             }
             CalendarWidget().update(context, glanceId)
-            delay(300)
         }
-
-        // Refresh events from calendar, then clear loading state
-        CalendarWidget.refreshEventsIntoState(context, glanceId)
-        updateAppWidgetState(context, glanceId) { prefs ->
-            prefs[CalendarWidget.IsRefreshingKey] = false
-            prefs[CalendarWidget.RefreshPhaseKey] = 0
-        }
-        CalendarWidget().update(context, glanceId)
     }
 }

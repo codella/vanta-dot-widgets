@@ -120,9 +120,14 @@ internal object MinuteTickReceiver : android.content.BroadcastReceiver() {
         context: Context,
         ids: List<GlanceId>,
     ): Boolean {
+        val now = System.currentTimeMillis()
         for (id in ids) {
             val prefs = getAppWidgetState(context, PreferencesGlanceStateDefinition, id)
-            if (prefs[CalendarWidget.IsRefreshingKey] == true) return true
+            if (prefs[CalendarWidget.IsRefreshingKey] == true) {
+                val startedAt = prefs[CalendarWidget.RefreshStartedAtKey] ?: 0L
+                // Treat refreshes older than 10s as stale (crashed callback)
+                if (now - startedAt < 10_000L) return true
+            }
         }
         return false
     }

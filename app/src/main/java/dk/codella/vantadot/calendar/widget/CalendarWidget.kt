@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.LocalSize
@@ -73,6 +74,7 @@ class CalendarWidget : GlanceAppWidget() {
     companion object {
         private const val TAG = "CalendarWidget"
         val IsRefreshingKey = booleanPreferencesKey("is_refreshing")
+        val RefreshStartedAtKey = longPreferencesKey("refresh_started_at")
         val RefreshPhaseKey = intPreferencesKey("refresh_phase")
         val CachedEventsKey = stringPreferencesKey("cached_events")
         val HasPermissionKey = booleanPreferencesKey("has_permission")
